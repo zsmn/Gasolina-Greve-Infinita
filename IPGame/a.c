@@ -2,6 +2,7 @@
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
+#include <allegro5/allegro_primitives.h>
 #include <stdio.h>
  
 const int LARGURA_TELA = 960;
@@ -12,6 +13,7 @@ ALLEGRO_AUDIO_STREAM *musica = NULL;
 ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;
 ALLEGRO_BITMAP *imagem = NULL;
 ALLEGRO_BITMAP *fundo = NULL;
+ALLEGRO_BITMAP *quadrado = NULL;
 
 void fadeout(int velocidade);
 void fadein(ALLEGRO_BITMAP *imagem, int velocidade);
@@ -27,6 +29,11 @@ int main(void)
         return -1;
     }
  
+    int desenha = 1;
+    int posx = 90, dir_x = 15;
+    int posy = 270, dir_y = 15;
+
+
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer());
     al_set_audio_stream_playing(musica, true);
 
@@ -37,7 +44,7 @@ int main(void)
     imagem = al_load_bitmap("resources/aa.png");
     fadein(imagem, 1);
 
- 		setAudio("sounds/soundtest2.ogg");
+ 	setAudio("sounds/soundtest2.ogg");
  		
     while (!sair)
     {
@@ -50,28 +57,169 @@ int main(void)
             {
                 if (evento.keyboard.keycode == ALLEGRO_KEY_W)
                 {
-                    fprintf(stderr, "CIMA\n");
+			        posy -= dir_y;
+
+			        if(posy == 225){
+			        	posy += 15;
+			        }
+			        if((posx >= 135 && posx <= 300) && (posy == 270)){
+			        	posy += 15;
+			        }
+			        if((posx >= 30 && posx<= 60) && posy == 390){
+			        	posy += 15;
+			        }
+			        if((posx >= 705 && posx <= 810) && posy == 600){
+			        	posy += 15;
+			        }
+			        if((posx >= 495 && posx <= 855) && posy == 510){
+			        	posy += 15;
+			        }
+			        if((posx == 870 && posy == 345) || (posx == 345 && posy == 330)){
+			        	posy += 15;
+			        }
+			        if((posx >= 360 && posx <= 645) && posy == 405){
+			        	posy += 15;
+			        }
+			        if((posx >= 690 && posx <= 810) && posy == 405){
+			        	posy += 15;
+			        }
+
+			        desenha = 1;
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A)
                 {
-                    fprintf(stderr, "ESQUERDA\n");
+                    posx -= dir_x;
+
+			        if((posx <= 300 && posx >= 285) && (posy <= 270 && posy >= 240)){
+			        	posx += 15;
+			        }
+			        if(posx == 60 && (posy <= 375 && posy >= 240)){
+			        	posx += 15;
+			        }
+			        if(posx <= 30){
+			        	posx = 30;
+			        }
+			        if(posx == 375 && (posy <= 555 && posy >= 450)){
+			        	posx += 15;
+			        }
+			        if(posx == 690 && posy == 615){
+			        	posx += 15;
+			        }
+			        if(posx == 855 && (posy >= 360 && posy <= 510)){
+			        	posx += 15;
+			        }
+			        if(posx == 465 && (posy == 300 || posy == 285)){
+			        	posx += 15;
+			        }
+			        if((posx == 645) && (posy >= 300 && posy <= 405)){
+			        	posx += 15;
+			        }
+
+			        desenha=1;
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S)
                 {
-                    fprintf(stderr, "BAIXO\n");
+			        posy += dir_y;
+
+			        if((posx >= 30 && posx <= 120) && posy == 435){
+			        	posy -= 15;
+			        }
+			        if((posx >= 135 && posx <= 375) && posy == 435){
+			        	posy -= 15;
+			        }
+			        if((posx >= 390 && posx <= 810) && posy == 570){
+			        	posy -= 15;
+			        }
+			        if((posx <= 870 && posx >= 855)  && posy == 600){
+			        	posy -= 15;
+			        }
+			        if((posx <= 840 && posx >= 705) && posy == 630){
+			        	posy -= 15;
+			        }
+			        if((posx >= 495 && posx <= 810) && posy == 450){
+			        	posy -= 15;
+			        }
+			        if((posx >= 690 && posx <= 810) && posy == 300){
+			        	posy -= 15;
+			        }
+			        if((posx >= 540 && posx <= 645) && posy == 300){
+			        	posy -= 15;
+			        }
+			        if((posx >= 480 && posx <= 510) && posy == 300){
+			        	posy -= 15;
+			        }
+			        if((posx >= 375 && posx <= 465) && posy == 285){
+			        	posy -= 15;
+			        }
+			        if((posx == 525 && posy == 300) || (posx == 360 && posy == 300) || (posx == 345 && posy == 315)){
+			        	posy -= 15;
+			        }
+			        if((posx >= 825 && posx <= 930) && posy == 285){
+			        	posy -= 15;
+			        }
+
+			         	desenha=1;
+			        
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D)
                 {
-                    fprintf(stderr, "DIREITA\n");
+                    posx += dir_x;
+
+			        if(posx == 135 && (posy >= 235 && posy <= 270)){
+			        	posx -= 15;
+			        }
+			        if(posx >= LARGURA_TELA - 30){
+			        	posx = LARGURA_TELA - 30;
+			        }
+			        if(posx == 885 && (posy <= 585 && posy >= 360)){
+			        	posx -= 15;
+			        }
+			        if(posx == 855 && (posy >= 600 && posy <= 615)){
+			        	posx -= 15;
+			        }
+			        if(posx == 495 && (posy >= 450 && posy <= 510)){
+			        	posx -= 15;
+			        }
+			        if(posx == 825 && (posy == 420 || posy == 435)){
+			        	posx -= 15;
+			        }
+			        if((posx == 525 && posy == 300) || (posx == 375 && posy == 285) || (posx == 825 && posy == 285)){
+			        	posx -= 15;
+			        }
+			        if(posx == 345 && (posy == 330 || posy == 315)){
+			        	posx -= 15;
+			        }
+			        if(posx == 360 && (posy >= 300 && posy <= 405)){
+			        	posx -= 15;
+			        }
+			        if(posx == 690 && (posy <= 405 && posy >= 300)){
+			        	posx -= 15;
+			        }
+			        desenha=1;
                 }
             }
             else if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
             {
                 sair = true;
             }
+
+            if(desenha && al_is_event_queue_empty(fila_eventos)) {
+
+            	fprintf(stderr, "x: %i y: %i\n", posx, posy);
+	            al_clear_to_color(al_map_rgb(0,0,0));
+
+	            //desenha o quadrado na tela nas posicoes X e Y
+	            al_draw_bitmap(imagem, 0, 0, 0);
+	            al_draw_bitmap(quadrado, posx, posy, 0);
+	            al_flip_display();
+
+	            //zera flag para nao entrar aqui no proximo loop
+	            desenha = 0;
+        	}
         }
     }
- 
+
+
     al_destroy_audio_stream(musica);
     al_destroy_event_queue(fila_eventos);
     al_destroy_display(janela);
@@ -189,6 +337,16 @@ bool inicializar()
     }
 
  	al_set_window_title(janela, "IP GAME");
+
+ 	quadrado = al_create_bitmap(20, 20);
+    if (!quadrado){
+        fprintf(stderr, "Falha ao criar bitmap.\n");
+        al_destroy_display(janela);
+        return 0;
+    }
+    al_set_target_bitmap(quadrado);
+    al_clear_to_color(al_map_rgb(255, 0, 0));
+    al_set_target_bitmap(al_get_backbuffer(janela));
 
     fundo = al_load_bitmap("resources/cin.jpeg");
  
