@@ -42,10 +42,16 @@ int main(void)
     fadeout(1);
 
     imagem = al_load_bitmap("resources/aa.png");
+
     fadein(imagem, 1);
+
+	al_draw_bitmap(imagem, 0, 0, 0);
+	al_draw_bitmap(quadrado, posx, posy, 0);
+	al_flip_display();
 
  	setAudio("sounds/soundtest2.ogg");
  		
+	
     while (!sair)
     {
         while (!al_is_event_queue_empty(fila_eventos))
@@ -205,7 +211,7 @@ int main(void)
 
             if(desenha && al_is_event_queue_empty(fila_eventos)) {
 
-            	fprintf(stderr, "x: %i y: %i\n", posx, posy);
+            	//fprintf(stderr, "x: %i y: %i\n", posx, posy);
 	            al_clear_to_color(al_map_rgb(0,0,0));
 
 	            //desenha o quadrado na tela nas posicoes X e Y
