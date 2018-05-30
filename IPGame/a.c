@@ -7,11 +7,14 @@
  
 const int LARGURA_TELA = 960;
 const int ALTURA_TELA = 703;
- 
+const int aaa = 5;
+
+
 ALLEGRO_DISPLAY *janela = NULL;
 ALLEGRO_AUDIO_STREAM *musica = NULL;
 ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;
 ALLEGRO_BITMAP *imagem = NULL;
+ALLEGRO_BITMAP *grupo = NULL;
 ALLEGRO_BITMAP *fundo = NULL;
 ALLEGRO_BITMAP *quadrado = NULL;
 
@@ -30,14 +33,19 @@ int main(void)
     }
  
     int desenha = 1;
-    int posx = 90, dir_x = 15;
-    int posy = 270, dir_y = 15;
+    int posx = 90, dir_x = aaa;
+    int posy = 270, dir_y = aaa;
 
 
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer());
     al_set_audio_stream_playing(musica, true);
 
     fadein(fundo, 1);
+    al_rest(3.0);
+    fadeout(1);
+
+    grupo = al_load_bitmap("resources/group.jpeg");
+    fadein(grupo, 1);
     al_rest(3.0);
     fadeout(1);
 
@@ -59,35 +67,33 @@ int main(void)
             ALLEGRO_EVENT evento;
             al_wait_for_event(fila_eventos, &evento);
  
-            if (evento.type == ALLEGRO_EVENT_KEY_UP)
-            {
                 if (evento.keyboard.keycode == ALLEGRO_KEY_W)
                 {
 			        posy -= dir_y;
 
 			        if(posy == 225){
-			        	posy += 15;
+			        	posy += aaa;
 			        }
 			        if((posx >= 135 && posx <= 300) && (posy == 270)){
-			        	posy += 15;
+			        	posy += aaa;
 			        }
 			        if((posx >= 30 && posx<= 60) && posy == 390){
-			        	posy += 15;
+			        	posy += aaa;
 			        }
 			        if((posx >= 705 && posx <= 810) && posy == 600){
-			        	posy += 15;
+			        	posy += aaa;
 			        }
 			        if((posx >= 495 && posx <= 855) && posy == 510){
-			        	posy += 15;
+			        	posy += aaa;
 			        }
 			        if((posx == 870 && posy == 345) || (posx == 345 && posy == 330)){
-			        	posy += 15;
+			        	posy += aaa;
 			        }
 			        if((posx >= 360 && posx <= 645) && posy == 405){
-			        	posy += 15;
+			        	posy += aaa;
 			        }
 			        if((posx >= 690 && posx <= 810) && posy == 405){
-			        	posy += 15;
+			        	posy += aaa;
 			        }
 
 			        desenha = 1;
@@ -97,28 +103,28 @@ int main(void)
                     posx -= dir_x;
 
 			        if((posx <= 300 && posx >= 285) && (posy <= 270 && posy >= 240)){
-			        	posx += 15;
+			        	posx += aaa;
 			        }
 			        if(posx == 60 && (posy <= 375 && posy >= 240)){
-			        	posx += 15;
+			        	posx += aaa;
 			        }
 			        if(posx <= 30){
 			        	posx = 30;
 			        }
 			        if(posx == 375 && (posy <= 555 && posy >= 450)){
-			        	posx += 15;
+			        	posx += aaa;
 			        }
 			        if(posx == 690 && posy == 615){
-			        	posx += 15;
+			        	posx += aaa;
 			        }
 			        if(posx == 855 && (posy >= 360 && posy <= 510)){
-			        	posx += 15;
+			        	posx += aaa;
 			        }
 			        if(posx == 465 && (posy == 300 || posy == 285)){
-			        	posx += 15;
+			        	posx += aaa;
 			        }
 			        if((posx == 645) && (posy >= 300 && posy <= 405)){
-			        	posx += 15;
+			        	posx += aaa;
 			        }
 
 			        desenha=1;
@@ -128,40 +134,40 @@ int main(void)
 			        posy += dir_y;
 
 			        if((posx >= 30 && posx <= 120) && posy == 435){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx >= 135 && posx <= 375) && posy == 435){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx >= 390 && posx <= 810) && posy == 570){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx <= 870 && posx >= 855)  && posy == 600){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx <= 840 && posx >= 705) && posy == 630){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx >= 495 && posx <= 810) && posy == 450){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx >= 690 && posx <= 810) && posy == 300){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx >= 540 && posx <= 645) && posy == 300){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx >= 480 && posx <= 510) && posy == 300){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx >= 375 && posx <= 465) && posy == 285){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx == 525 && posy == 300) || (posx == 360 && posy == 300) || (posx == 345 && posy == 315)){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 			        if((posx >= 825 && posx <= 930) && posy == 285){
-			        	posy -= 15;
+			        	posy -= aaa;
 			        }
 
 			         	desenha=1;
@@ -172,39 +178,39 @@ int main(void)
                     posx += dir_x;
 
 			        if(posx == 135 && (posy >= 235 && posy <= 270)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        if(posx >= LARGURA_TELA - 30){
 			        	posx = LARGURA_TELA - 30;
 			        }
 			        if(posx == 885 && (posy <= 585 && posy >= 360)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        if(posx == 855 && (posy >= 600 && posy <= 615)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        if(posx == 495 && (posy >= 450 && posy <= 510)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        if(posx == 825 && (posy == 420 || posy == 435)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        if((posx == 525 && posy == 300) || (posx == 375 && posy == 285) || (posx == 825 && posy == 285)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        if(posx == 345 && (posy == 330 || posy == 315)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        if(posx == 360 && (posy >= 300 && posy <= 405)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        if(posx == 690 && (posy <= 405 && posy >= 300)){
-			        	posx -= 15;
+			        	posx -= aaa;
 			        }
 			        desenha=1;
                 }
-            }
-            else if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
+
+            if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE)
             {
                 sair = true;
             }
