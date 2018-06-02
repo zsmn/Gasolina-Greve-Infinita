@@ -143,7 +143,7 @@ int main(void){
 			        if(posx>=662&&posx<=812&&posy>=578&&posy<=612){
 			            posy+=dir_y;
 			        }
-			        if(posx<0||posx>960||posy<0||posy>703){
+			        if(posx<0||posx>=960||posy<0||posy>=703){
 			            posy+=dir_y;
 			        }
 			        desenha = 1;
@@ -157,7 +157,7 @@ int main(void){
 			            posx+=dir_x;
 			        }
 			        if(posx>=63&&posx<=145&&posy>=113&&posy<=233){
-			            posx=dir_x;
+			            posx+=dir_x;
 			        }
 			        if(posx>=145&&posx<=287&&posy>=121&&posy<=287){
 			            posx+=dir_x;
@@ -246,7 +246,7 @@ int main(void){
 			        if(posx>=662&&posx<=812&&posy>=578&&posy<=612){
 			            posx+=dir_x;
 			        }
-			        if(posx<0||posx>960||posy<0||posy>703){
+			        if(posx<0||posx>=960||posy<0||posy>=703){
 			            posx+=dir_x;
 			        }
 			        desenha=1;
@@ -349,7 +349,7 @@ int main(void){
 			        if(posx>=662&&posx<=812&&posy>=578&&posy<=612){
 			            posy-=dir_y;
 			        }
-			        if(posx<0||posx>960||posy<0||posy>703){
+			        if(posx<0||posx>=960||posy<0||posy>=703){
 			            posy-=dir_y;
 			        }
 
@@ -454,7 +454,7 @@ int main(void){
 			        if(posx>=662&&posx<=812&&posy>=578&&posy<=612){
 			            posx-=dir_x;
 			        }
-			        if(posx<0||posx>960||posy<0||posy>703){
+			        if(posx<0||posx>=960||posy<0||posy>=703){
 			            posx-=dir_x;
 			        }
 			        desenha=1;
