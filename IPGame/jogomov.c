@@ -256,7 +256,7 @@ void checavalidespos(int posx,int posy,int passo,int* or){
 	if(posx>=287&&posx<=401&&posy>=113&&posy<=233){
 	    *or-=passo;
 	}
-	if(posx>=401&&posx<=463&&posy>=96&&posy<=135){
+    if(posx>=401&&posx<=463&&posy>=96&&posy<=135){
 	    *or-=passo;
 	}
 	if(posx>=432&&posx<=546&&posy>=98&&posy<=234){
