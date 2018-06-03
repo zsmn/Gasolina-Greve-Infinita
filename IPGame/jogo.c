@@ -298,7 +298,7 @@ void checavalidespos(int posx,int posy,int passo,int* or){
     if(posx>=868&&posx<=898&&posy>=606&&posy<=644){
 	    *or-=passo;
 	}
-	if(posx<0||posx>=960||posy<0||posy>=703){
+    if(posx<0||posx>=960||posy<0||posy>=703){
 	    *or-=passo;
 	}
 }
