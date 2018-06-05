@@ -93,6 +93,9 @@ int main(void){
                     /* botao de sair */
                     if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&
                     evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                        al_destroy_audio_stream(musica);
+                        al_destroy_event_queue(fila_eventos);
+                        al_destroy_display(janela); //tudo termina
                         return 0;
                     }
                 }
