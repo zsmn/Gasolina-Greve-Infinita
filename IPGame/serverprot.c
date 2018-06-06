@@ -1,61 +1,44 @@
-#include<stdio.h>
+#include "ACore.h"
 #include "server.h"
-#include<string.h>
-#include<allegro5/allegro.h>
-#define numeromaxjog 1
-#define mensagem struct msg_ret_t
-void checavalidespos(int posx,int posy,int passo,short* or);
-int main(){
-    int id=-1;
-    serverInit(numeromaxjog);
-    static  short pos[numeromaxjog][2];
-    puts("hey, o servidor começou!\n");
-    int count=0;
-    while(count<numeromaxjog){
-        id=acceptConnection();
-        if(id==-1){
-            puts("opa,buguei\n");
-            al_rest(1);
-        }
-        if(id!=NO_CONNECTION){
-            puts("conectei");
-            count++;
-            recvMsgFromClient(pos[id],id,WAIT_FOR_IT);
-            puts("e 1\n");
-            break;
-        }
-        al_rest(1);
+#include <stdio.h>
+#include <string.h>
+#define jogadores 2
+void checavalidespos(unsigned short posx,unsigned short posy,unsigned short passo,unsigned short* or);
+int main() {
+  unsigned short  pos[2][2];
+  serverInit(2);
+  char tecla;
+  puts("o servidor esta funcionando!!");
+  while (1) 
+  {
+    int id = acceptConnection();
+    if (id != NO_CONNECTION) {
+      recvMsgFromClient(pos[id], id, WAIT_FOR_IT);
+      printf("primeiro jogador conectou, coordenadas x: %d y: %d",pos[id][0],pos[id][1]);
     }
-    
-    puts("ei, sai");
-    printf("%d %d",pos[id][0],pos[id][1]);  
-    mensagem msgjog;
-    char key;
-    while(1){
-        msgjog=recvMsg(&key);
-        if(msgjog.status==MESSAGE_OK){
-            if(key=='w'){
-                puts("esse toroco");
-                pos[msgjog.client_id][1]-=5;
-                checavalidespos(pos[msgjog.client_id][0],pos[msgjog.client_id][1],-5,&pos[msgjog.client_id][1]);
-            }
-            if(key=='s'){
-                pos[msgjog.client_id][1]+=5;
-                checavalidespos(pos[msgjog.client_id][0],pos[msgjog.client_id][1],5,&pos[msgjog.client_id][1]);
-            }
-            if(key=='a'){
-                pos[msgjog.client_id][0]-=5;
-                checavalidespos(pos[msgjog.client_id][0],pos[msgjog.client_id][1],-5,&pos[msgjog.client_id][0]);
-            }
-            if(key=='d'){
-                pos[msgjog.client_id][0]+=5;
-                checavalidespos(pos[msgjog.client_id][0],pos[msgjog.client_id][1],5,&pos[msgjog.client_id][0]);
-            }
-        }
-        broadcast(pos,sizeof(unsigned short)*2*numeromaxjog);
-    }
+    struct msg_ret_t msgjog = recvMsg(&tecla);
+    if (msgjog.status == MESSAGE_OK) {
+      if (tecla == 'w'){ //ægora ele checa se tem colisao, para cima
+	      pos[msgjog.client_id][1]-=5;
+	      checavalidespos(pos[msgjog.client_id][0],pos[msgjog.client_id][1],-5,&pos[msgjog.client_id][1]);
+      }
+      else if (tecla == 'a'){//para a esquerda
+         pos[msgjog.client_id][0]-=5;
+         checavalidespos(pos[msgjog.client_id][0],pos[msgjog.client_id][1],-5,&pos[msgjog.client_id][0]);
+      }
+      else if ('s' == tecla){//para baixo
+         pos[msgjog.client_id][1]+=5;   
+         checavalidespos(pos[msgjog.client_id][0],pos[msgjog.client_id][1],5,&pos[msgjog.client_id][1]);    
+      }
+      else if ('d' == tecla){//para a direita
+         pos[msgjog.client_id][0]+=5;
+         checavalidespos(pos[msgjog.client_id][0],pos[msgjog.client_id][1],5,&pos[msgjog.client_id][0]);
+      }              
+      broadcast(pos[msgjog.client_id],sizeof(unsigned short)*2);
+    } 
+  }
 }
-void checavalidespos(int posx,int posy,int passo,short* or){
+void checavalidespos(unsigned short posx,unsigned short posy,unsigned short passo,unsigned short* or){
     if(posx>=0&&posx<=960&&posy>=0&&posy<=70){
         *or-=passo;
     }
@@ -71,7 +54,7 @@ void checavalidespos(int posx,int posy,int passo,short* or){
 	if(posx>=287&&posx<=401&&posy>=113&&posy<=233){
 	    *or-=passo;
 	}
-	if(posx>=401&&posx<=463&&posy>=96&&posy<=135){
+    if(posx>=401&&posx<=463&&posy>=96&&posy<=135){
 	    *or-=passo;
 	}
 	if(posx>=432&&posx<=546&&posy>=98&&posy<=234){
