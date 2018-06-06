@@ -32,19 +32,20 @@ ALLEGRO_BITMAP *perso6 = NULL;
 
 /* vida de personagens */
 ALLEGRO_BITMAP *bvida = NULL;
-
 ALLEGRO_TIMER *timer = NULL; // inicia o timer
+
 void fadeout(int velocidade);  //função pra dar o fadeout
 void checavalidespos(int posx,int posy,int passo,int* or);
 void fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
 void setAudio(char k[]); //função de audio
+void setarVida(int n);
 bool inicializar();  //função q inicializa 
 int main(void){
     bool sair = false; //declaro a variavel sair
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
         return -1;
     }
-    int auxiliar = 0, testim = 0;
+    int auxiliar = 0;
     int desenha = 1; //inicio desenha como 1
     int posx = 90, dir_x = passo; //seto a posição e a passada do personagem
     int posy = 270, dir_y = passo;
@@ -58,22 +59,22 @@ int main(void){
  	int frameDelay = 5;
  	int frameWidth = 48;
  	int frameHeight = 60;
+ 	
+ 	/* variaveis usavas pra a musica */
  	int timer = 0;
  	int ttest = 0;
  	int musat = 0;
- 	int ajudante = 0;
  	
  	/* tempo de cada musica */
  	int tmpmusic[5] = {212, 152, 184, 280, 248};
  	char endmusic[5][30] = {"sounds/whenyouwere.ogg", "sounds/waitandbleed.ogg",
  	"sounds/timeofdying.ogg", "sounds/psychosocial.ogg", "sounds/freakonaleash.ogg"};
- 	
 
     // variavel pra obter a tecla pressionada
     char tecl;
 
     // variavel de vida do jogador
-    int vida = 2;
+    int vida = 3;
 
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
@@ -120,9 +121,10 @@ int main(void){
         al_rest(0.1);
     }
 
-    fadeout(1);
+    //fadeout(1);
     personagens = al_load_bitmap("resources/perso.png");
-    fadein(personagens, 1);
+    al_draw_bitmap(personagens, 0, 0, 0);
+    //fadein(personagens, 1);
     
     perso1 = al_load_bitmap("resources/perso1.png");
     perso2 = al_load_bitmap("resources/perso2.png");
@@ -192,7 +194,8 @@ int main(void){
     fadein(imagem, 1); //faz ela aparecer
 	al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
 	al_draw_bitmap_region(quadrado, 0, 0, frameWidth, frameHeight, posx, posy, 0); //desenha o quadradinho
-	bvida = al_load_bitmap("resources/bvida3.png");
+	setarVida(vida);
+	//bvida = al_load_bitmap("resources/bvida3.png");
 	al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
 	al_draw_bitmap(bvida, 0, 0, 0);
 	al_flip_display();// bota tudo isso para o jogador
@@ -258,18 +261,9 @@ int main(void){
 		           	}
 		           	// como usar:
 		           	// al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
-		           	
 				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
 				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, 0, frameWidth, frameHeight, posx, posy, 0);
-				        if(vida == 3){
-				            bvida = al_load_bitmap("resources/bvida3.png");
-				        }else if(vida == 2){
-				            bvida = al_load_bitmap("resources/bvida2.png");
-				        }else if(vida == 1){
-				            bvida = al_load_bitmap("resources/bvida1.png");
-				        }else{
-				            bvida = al_load_bitmap("resources/bvida0.png");
-				        }
+				        setarVida(vida);
 				        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
 				        al_draw_bitmap(bvida, 0, 0, 0);
 			           	al_flip_display();
@@ -523,5 +517,17 @@ void checavalidespos(int posx,int posy,int passo,int* or){
 	}
 	if(posx<0||posx>=960||posy<0||posy>=703){
 	    *or-=passo;
+	}
+}
+
+void setarVida(int n){
+    if(n == 3){
+	    bvida = al_load_bitmap("resources/bvida3.png");
+	}else if(n == 2){
+	    bvida = al_load_bitmap("resources/bvida2.png");
+	}else if(n == 1){
+	    bvida = al_load_bitmap("resources/bvida1.png");
+	}else{
+	    bvida = al_load_bitmap("resources/bvida0.png");
 	}
 }
