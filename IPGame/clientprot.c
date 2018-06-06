@@ -30,11 +30,13 @@ ALLEGRO_BITMAP *perso4 = NULL;
 ALLEGRO_BITMAP *perso5 = NULL;
 ALLEGRO_BITMAP *perso6 = NULL;
 /* personagens */
-
+ALLEGRO_BITMAP *bvida=NULL;
 ALLEGRO_TIMER *timer = NULL; // inicia o timer
 void fadeout(int velocidade);  //função pra dar o fadeout
+void checavalidespos(int posx,int posy,int passo,int* or);
 void fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
 void setAudio(char k[]); //função de audio
+void setarVida(int n);
 bool inicializar();  //função q inicializa 
 void conectar(unsigned short pos[2]);
 int main(void){
@@ -57,12 +59,23 @@ int main(void){
  	int curFrame = 0;
  	int frameCount = 0;
  	int frameDelay = 5;
- 	int frameWidth = 48;
- 	int frameHeight = 60;
-
+ 	int frameWidth = 42;
+ 	int frameHeight = 38;
+   int pp;
+ 	int pers = 0;
+ 	/* variaveis usavas pra a musica */
+ 	int timer = 0;
+ 	int ttest = 0;
+ 	int musat = 0;
+ 	
+ 	/* tempo de cada musica */
+ 	int tmpmusic[5] = {212, 152, 184, 280, 248};
+ 	char endmusic[5][30] = {"sounds/whenyouwere.ogg", "sounds/waitandbleed.ogg",
+ 	"sounds/timeofdying.ogg", "sounds/psychosocial.ogg", "sounds/freakonaleash.ogg"};
+   
     // variavel pra obter a tecla pressionada
     char tecl;
-
+    int vida = 3;
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
 
@@ -75,7 +88,6 @@ int main(void){
     fadeout(1); //e sai
     menu = al_load_bitmap("resources/menu.bmp");
     fadein(menu, 1);
-
     while(jogar != 0){
         al_draw_bitmap(menu, 0, 0, 0);
             while(!al_is_event_queue_empty(fila_eventos)){
@@ -173,12 +185,14 @@ int main(void){
                 }
             }
         al_rest(0.1);
-    }                    
-    
+    }                      
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
 	al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
 	al_draw_bitmap_region(quadrado, 0, 0, frameWidth, frameHeight, posx, posy, 0); //desenha o quadradinho
+	setarVida(vida);
+	al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
+	al_draw_bitmap(bvida, 0, 0, 0);
 	al_flip_display();// bota tudo isso para o jogador
  	setAudio("sounds/soundtest2.ogg");//começa a melhor musica possivel
     char tecla;
@@ -188,7 +202,17 @@ int main(void){
             al_wait_for_event(fila_eventos, &evento);//esse evento fica na fila
             
 		        if(evento.type == ALLEGRO_EVENT_TIMER){
-		        	// aqui vai ser o timer (pretendo usar pra controlar o 'loop' da musica)
+		        /* loop que controla o timer (que regula a musica) */
+		            timer++;
+		            if(timer == 60){
+		                ttest++;
+		                timer = 0;
+		                if(ttest == tmpmusic[musat%5]){
+		                   ttest = 0;
+		                   musat++;
+		                   setAudio(endmusic[musat%5]);
+		                }
+		            }
 		        }
 
                  if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
@@ -199,6 +223,7 @@ int main(void){
 			        recvMsgFromServer(pos,WAIT_FOR_IT);
 			        posx=pos[0];
 			        posy=pos[1];
+			        pp=1;
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
                     tecla='a';
@@ -206,6 +231,7 @@ int main(void){
 			        desenha=1;
 			        tecl='A';
 			        recvMsgFromServer(pos,WAIT_FOR_IT);
+			        pp=2;
 			        posx=pos[0];
 			        posy=pos[1];
                 }
@@ -217,6 +243,7 @@ int main(void){
 			        recvMsgFromServer(pos, WAIT_FOR_IT);
 			        posx=pos[0];
 			        posy=pos[1];
+			        pp=0;
 			        
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
@@ -227,6 +254,7 @@ int main(void){
 			        recvMsgFromServer(pos,WAIT_FOR_IT);
 			        posx=pos[0];
 			        posy=pos[1];
+			        pp=3;
                 }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai 
                 sair = true;
@@ -247,6 +275,9 @@ int main(void){
 
 				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
 				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, 0, frameWidth, frameHeight, posx, posy, 0);
+				        setarVida(vida);
+				        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
+				        al_draw_bitmap(bvida, 0, 0, 0);
 			           	al_flip_display();
 			           	al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
 		           	}
@@ -366,7 +397,7 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     }
  	al_set_window_title(janela, "IP GAME");
  	//quadrado = al_create_bitmap(20, 20);
- 	quadrado = al_load_bitmap("bon2.bmp"); // cria o 'personagem'
+ 	quadrado = al_load_bitmap("bon2.png"); // cria o 'personagem'
     if (!quadrado){
         fprintf(stderr, "Falha ao criar bitmap.\n");
         al_destroy_display(janela);
@@ -385,7 +416,6 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     al_start_timer(timer);
     return true;
 }
-
 void setAudio(char k[]){ //comeca musiquinha
 	al_set_audio_stream_playing(musica, false);
 	musica = al_load_audio_stream(k, 4, 1024);
@@ -408,4 +438,15 @@ void conectar(unsigned short pos[2]) {
   }while(ans!=SERVER_UP);
   sendMsgToServer(pos, 2*sizeof(short));
   puts("estamos indo");
+}
+void setarVida(int n){
+    if(n == 3){
+	    bvida = al_load_bitmap("resources/bvida3.png");
+	}else if(n == 2){
+	    bvida = al_load_bitmap("resources/bvida2.png");
+	}else if(n == 1){
+	    bvida = al_load_bitmap("resources/bvida1.png");
+	}else{
+	    bvida = al_load_bitmap("resources/bvida0.png");
+	}
 }
