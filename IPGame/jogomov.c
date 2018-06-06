@@ -30,6 +30,9 @@ ALLEGRO_BITMAP *perso5 = NULL;
 ALLEGRO_BITMAP *perso6 = NULL;
 /* personagens */
 
+/* vida de personagens */
+ALLEGRO_BITMAP *bvida = NULL;
+
 ALLEGRO_TIMER *timer = NULL; // inicia o timer
 void fadeout(int velocidade);  //função pra dar o fadeout
 void checavalidespos(int posx,int posy,int passo,int* or);
@@ -55,9 +58,22 @@ int main(void){
  	int frameDelay = 5;
  	int frameWidth = 48;
  	int frameHeight = 60;
+ 	int timer = 0;
+ 	int ttest = 0;
+ 	int musat = 0;
+ 	int ajudante = 0;
+ 	
+ 	/* tempo de cada musica */
+ 	int tmpmusic[5] = {212, 152, 184, 280, 248};
+ 	char endmusic[5][30] = {"sounds/whenyouwere.ogg", "sounds/waitandbleed.ogg",
+ 	"sounds/timeofdying.ogg", "sounds/psychosocial.ogg", "sounds/freakonaleash.ogg"};
+ 	
 
     // variavel pra obter a tecla pressionada
     char tecl;
+
+    // variavel de vida do jogador
+    int vida = 2;
 
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
@@ -89,6 +105,7 @@ int main(void){
                     if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&
                     evento.mouse.y >= 482 && evento.mouse.y <= 580){
                         jogar = 0;
+                        selecao = 0;
                     }
                     /* botao de sair */
                     if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&
@@ -175,8 +192,11 @@ int main(void){
     fadein(imagem, 1); //faz ela aparecer
 	al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
 	al_draw_bitmap_region(quadrado, 0, 0, frameWidth, frameHeight, posx, posy, 0); //desenha o quadradinho
+	bvida = al_load_bitmap("resources/bvida3.png");
+	al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
+	al_draw_bitmap(bvida, 0, 0, 0);
 	al_flip_display();// bota tudo isso para o jogador
- 	setAudio("sounds/soundtest2.ogg");//começa a melhor musica possivel
+ 	setAudio("sounds/whenyouwere.ogg");//começa a melhor musica possivel
 
     while (!sair){//entra no loop do jogo
         while (!al_is_event_queue_empty(fila_eventos)){//se  acontecer algo
@@ -184,7 +204,17 @@ int main(void){
             al_wait_for_event(fila_eventos, &evento);//esse evento fica na fila
             
 		        if(evento.type == ALLEGRO_EVENT_TIMER){
-		        	// aqui vai ser o timer (pretendo usar pra controlar o 'loop' da musica)
+		        /* loop que controla o timer (que regula a musica) */
+		            timer++;
+		            if(timer == 60){
+		                ttest++;
+		                timer = 0;
+		                if(ttest == tmpmusic[musat%5]){
+		                   ttest = 0;
+		                   musat++;
+		                   setAudio(endmusic[musat%5]);
+		                }
+		            }
 		        }
 
                  if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
@@ -228,9 +258,20 @@ int main(void){
 		           	}
 		           	// como usar:
 		           	// al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
-
+		           	
 				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
 				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, 0, frameWidth, frameHeight, posx, posy, 0);
+				        if(vida == 3){
+				            bvida = al_load_bitmap("resources/bvida3.png");
+				        }else if(vida == 2){
+				            bvida = al_load_bitmap("resources/bvida2.png");
+				        }else if(vida == 1){
+				            bvida = al_load_bitmap("resources/bvida1.png");
+				        }else{
+				            bvida = al_load_bitmap("resources/bvida0.png");
+				        }
+				        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
+				        al_draw_bitmap(bvida, 0, 0, 0);
 			           	al_flip_display();
 			           	al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
 		           	}
@@ -268,7 +309,7 @@ void fadeout(int velocidade){
  
     al_destroy_bitmap(buffer);
 }
- 
+
 void fadein(ALLEGRO_BITMAP *imagem, int velocidade)
 {
     if (velocidade < 0)
