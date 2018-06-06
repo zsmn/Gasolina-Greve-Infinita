@@ -8,7 +8,7 @@
 const float tempofade = 1.5;
 const int LARGURA_TELA = 960;
 const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas
-const int passo = 3;  //declaro quantos passos ando
+const int passo = 1;  //declaro quantos passos ando
 ALLEGRO_DISPLAY *janela = NULL; //ponteiro para a janela
 ALLEGRO_AUDIO_STREAM *musica = NULL; //ponteiro para a musica
 ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;  //ponteiro para a fila de eventos
@@ -34,12 +34,15 @@ ALLEGRO_BITMAP *perso6 = NULL;
 ALLEGRO_BITMAP *bvida = NULL;
 ALLEGRO_TIMER *timer = NULL; // inicia o timer
 
+int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//andar na matriz
 void fadeout(int velocidade);  //função pra dar o fadeout
 void checavalidespos(int posx,int posy,int passo,int* or);
 void fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
 void setAudio(char k[]); //função de audio
 void setarVida(int n);
 bool inicializar();  //função q inicializa 
+void preencheMatriz();// cria matriz
+int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//anda na matriz
 int main(void){
     bool sair = false; //declaro a variavel sair
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
@@ -47,10 +50,12 @@ int main(void){
     }
     int auxiliar = 0;
     int desenha = 1; //inicio desenha como 1
-    int posx = 90, dir_x = passo; //seto a posição e a passada do personagem
-    int posy = 270, dir_y = passo;
+    int posx = 8, dir_x = passo; //seto a posição e a passada do personagem
+    int posy = 17, dir_y = passo;
     int jogar = 1;
     int selecao;
+    char matrizOcupada[40][61];
+    preencheMatriz(matrizOcupada);
     
     /* variaveis da animacao do personagem */
  	const int maxFrame = 2;
@@ -201,7 +206,7 @@ int main(void){
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
 	al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
-	al_draw_bitmap_region(quadrado, 0, 0, frameWidth, frameHeight, posx, posy, 0); //desenha o quadradinho
+	al_draw_bitmap_region(quadrado, 0, 0, frameWidth, frameHeight, (posx * 16), (posy * 16), 0); //desenha o quadradinho
 	setarVida(vida);
 	//bvida = al_load_bitmap("resources/bvida3.png");
 	al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
@@ -229,38 +234,44 @@ int main(void){
 		        }
 
                  if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
-			        posy -= dir_y;
-			        checavalidespos(posx,posy,-dir_y,&posy);
+			        //posy -= dir_y;
+			        //checavalidespos(posx,posy,-dir_y,&posy);
+			        
 			        desenha = 1;
-			        tecl='W';
-			        pp = 1;                }
+			        tecl='w';
+			        posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
+			        pp = 1;
+			        }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
-                    posx -= dir_x;
-                    checavalidespos(posx,posy,-dir_x,&posx);
+                   // posx -= dir_x;
+                    //checavalidespos(posx,posy,-dir_x,&posx);
 			        desenha=1;
-			        tecl='A';
+			        tecl='a';
+			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pp = 2;
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
-			        posy += dir_y;
-			        checavalidespos(posx,posy,dir_y,&posy);
+			        //posy += dir_y;
+			        //checavalidespos(posx,posy,dir_y,&posy);
 			        desenha=1;
-			        tecl='S';
+			        tecl='s';
+			        posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pp = 0;
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
-                    posx += dir_x;
-			        checavalidespos(posx,posy,dir_x,&posx);
+                    //posx += dir_x;
+			        //checavalidespos(posx,posy,dir_x,&posx);
 			        desenha=1;
-			        tecl='D';
+			        tecl='d';
 			        pp = 3;
+			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
                 }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai 
                 sair = true;
                 return 0;
             }
             if(desenha && al_is_event_queue_empty(fila_eventos)) {
-	            if(tecl == 'S' || tecl == 'W' || tecl == 'A' || tecl == 'D'){
+	            if(tecl == 's' || tecl == 'w' || tecl == 'a' || tecl == 'd'){
 	            	for(auxiliar = 0; auxiliar < 5; auxiliar++){
 	            	if(frameCount++ >= frameDelay){
 		           		if(curFrame++ >= maxFrame){
@@ -272,7 +283,7 @@ int main(void){
 		           	// como usar:
 		           	// al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
 				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, posx, posy, 0);
+				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, (posx) * 16, (posy) * 16, 0);
 				        setarVida(vida);
 				        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
 				        al_draw_bitmap(bvida, 0, 0, 0);
@@ -422,6 +433,102 @@ void setAudio(char k[]){ //comeca musiquinha
  	al_set_audio_stream_playing(musica, true);
 }
 
+void preencheMatriz(char matrizOcupada[][61]){
+ 
+    strcpy(matrizOcupada[0],"111111111111111111111111111111111111111111111111111111111111");
+    strcpy(matrizOcupada[1],"111111111111111111111111111111111111111111111111111111111111");
+    strcpy(matrizOcupada[2],"111100000000000000000000000000000000000000000000000000001111");
+    strcpy(matrizOcupada[3],"111100000000000000000000000000000000000000000000000000001111");
+    strcpy(matrizOcupada[4],"111100000000000000000000011110001111110011111111111111001111");
+    strcpy(matrizOcupada[5],"111111111000000000111111111111111111110011111111111111001111");
+    strcpy(matrizOcupada[6],"111111111111111111111111100111111100000000000000000011001111");
+    strcpy(matrizOcupada[7],"111111111111111111111111100111111100000000000000000011001111");
+    strcpy(matrizOcupada[8],"111111111111111111111111100111111111111111111111111011001111");
+    strcpy(matrizOcupada[9],"111111111111111111111111100111111111111111111111111011001111");
+    strcpy(matrizOcupada[10],"111111111111111111111111100111111111111111111111111011111111");
+    strcpy(matrizOcupada[11],"111111111111111111111111101111111111111111111111111011111111");
+    strcpy(matrizOcupada[12],"111100000111111111000000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[13],"111100000111111111000000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[14],"111100000111111111100000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[15],"111100000000000000000000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[16],"111100000000000000000000000000000100000000000000000011111111");
+    strcpy(matrizOcupada[17],"111100000000000000000001111111111111111110000000000011111111");
+    strcpy(matrizOcupada[18],"111100000000000000000011111111111111111110001111111111111111");
+    strcpy(matrizOcupada[19],"111100000000111000000001000000111111111110001111111111111111");
+    strcpy(matrizOcupada[20],"111100000000111000000001000000111111111110001111111111001111");
+    strcpy(matrizOcupada[21],"111100000000000000000001111111111111111010001111111111001111");
+    strcpy(matrizOcupada[22],"111100000000000000000001111111100000000000000000000000001111");
+    strcpy(matrizOcupada[23],"111100000000000000000001111111111111111110001111111111001111");
+    strcpy(matrizOcupada[24],"111100000000000000000000000000000000000000000000000011001111");
+    strcpy(matrizOcupada[25],"111111110000000000000000000000000000000000000000000011001111");
+    strcpy(matrizOcupada[26],"111111110000000011110000000000001111111111111111111111001111");
+    strcpy(matrizOcupada[27],"111111111111111111111111000000001111111111111111111111001111");
+    strcpy(matrizOcupada[28],"111111111111111111111111000000001111111111111111111111001111");
+    strcpy(matrizOcupada[29],"111111111111111111111111000000001111111111111111111111001111");
+    strcpy(matrizOcupada[30],"111100000011100000001111000000000000000000000000000000001111");
+    strcpy(matrizOcupada[31],"111100000000000010001111000000000000000000000000000000001111");
+    strcpy(matrizOcupada[32],"111100000000000000001111000000000000000000000000000000001111");
+    strcpy(matrizOcupada[33],"111111111100111111111111000000000000000000000000000000001111");
+    strcpy(matrizOcupada[34],"111100000000000000001111111111111111111101111111111000001111");
+    strcpy(matrizOcupada[35],"111100000000000000000000111111111111111101111111111000001111");
+    strcpy(matrizOcupada[36],"111100000000000000000000000000000000000000110000000000111111");
+    strcpy(matrizOcupada[37],"111100000000000000000000000000000000000000111111111111111111");
+    strcpy(matrizOcupada[38],"111111111111111111111111111111111111111111111111111111111111");
+    strcpy(matrizOcupada[39],"111111111111111111111111111111111111111111111111111111111111");
+}
+int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]){
+ 
+    if(tecla == 'w'){
+        if(matrizOcupada[posicaoY-1][posicaoX]=='0'){
+            matrizOcupada[posicaoY][posicaoX] = '0';
+            matrizOcupada[posicaoY-1][posicaoX] = '1';
+            posicaoY--;
+            return posicaoY;
+        }
+        else{
+            return posicaoY;
+        }
+    }
+    else{
+        if(tecla == 'a'){
+            if(matrizOcupada[posicaoY][posicaoX-1]=='0'){
+                matrizOcupada[posicaoY][posicaoX]='0';
+                matrizOcupada[posicaoY][posicaoX-1]='1';
+                posicaoX--;
+                return posicaoX;
+            }
+            else{
+                return posicaoX;
+            }
+        }
+        else{
+            if(tecla == 's'){
+                if(matrizOcupada[posicaoY+1][posicaoX]=='0'){
+                    matrizOcupada[posicaoY][posicaoX]='0';
+                    matrizOcupada[posicaoY+1][posicaoX]='1';
+                    posicaoY++;
+                    return posicaoY;
+                }
+                else{
+                    return posicaoY;
+                }  
+            }
+            else if(tecla == 'd'){
+                printf("ENTREI SDJOIASJ\n");
+                if(matrizOcupada[posicaoY][posicaoX+1]=='0'){
+                    printf("AQUI TBM\n");
+                    matrizOcupada[posicaoY][posicaoX]='0';
+                    matrizOcupada[posicaoY][posicaoX+1]='1';
+                    posicaoX++;
+                    return posicaoX;
+                }
+                else{
+                    return posicaoX;
+                }
+            }
+        }
+    }
+}
 void checavalidespos(int posx,int posy,int passo,int* or){
     if(posx>=0&&posx<=960&&posy>=0&&posy<=70){
         *or-=passo;
