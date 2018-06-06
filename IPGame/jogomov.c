@@ -57,8 +57,10 @@ int main(void){
  	int curFrame = 0;
  	int frameCount = 0;
  	int frameDelay = 5;
- 	int frameWidth = 48;
- 	int frameHeight = 60;
+ 	int frameWidth = 42;
+ 	int frameHeight = 38;
+ 	int pp;
+ 	int pers = 0;
  	
  	/* variaveis usavas pra a musica */
  	int timer = 0;
@@ -79,13 +81,13 @@ int main(void){
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
 
-    fadein(fundo, 1); //a imagem do pano de fundo entra
-    al_rest(tempofade); //dica durante 3 segundos
-    fadeout(1);//e sai
-    grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
-    fadein(grupo, 1); //faz a aparecer a imagem do grupo
-    al_rest(tempofade); //€spera 3 segundos
-    fadeout(1); //e sai
+   // fadein(fundo, 1); //a imagem do pano de fundo entra
+   // al_rest(tempofade); //dica durante 3 segundos
+   // fadeout(1);//e sai
+   // grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
+   // fadein(grupo, 1); //faz a aparecer a imagem do grupo
+   // al_rest(tempofade); //€spera 3 segundos
+   // fadeout(1); //e sai
     menu = al_load_bitmap("resources/menu.bmp");
     fadein(menu, 1);
 
@@ -158,32 +160,38 @@ int main(void){
                     if(evento.mouse.x >= 157 && evento.mouse.x <= 339 &&
                     evento.mouse.y >= 339 && evento.mouse.y <= 432){
                         fprintf(stderr, "PERSO1\n");
+                        pers = 1;
                         selecao = 0;
                     }
                     if(evento.mouse.x >= 422 && evento.mouse.x <= 519 &&
                     evento.mouse.y >= 341 && evento.mouse.y <= 434){
                         fprintf(stderr, "PERSO2\n");
                         selecao = 0;
+                        pers = 2;
                     }
                     if(evento.mouse.x >= 709 && evento.mouse.x <= 807 &&
                     evento.mouse.y >= 342 && evento.mouse.y <= 435){
                         fprintf(stderr, "PERSO3\n");
                         selecao = 0;
+                        pers = 3;
                     }
                     if(evento.mouse.x >= 151 && evento.mouse.x <= 246 &&
                     evento.mouse.y >= 551 && evento.mouse.y <= 644){
                         fprintf(stderr, "PERSO4\n");
                         selecao = 0;
+                        pers = 4;
                     }
                     if(evento.mouse.x >= 420 && evento.mouse.x <= 515 &&
                     evento.mouse.y >= 552 && evento.mouse.y <= 645){
                         fprintf(stderr, "PERSO5\n");
                         selecao = 0;
+                        pers = 5;
                     }
                     if(evento.mouse.x >= 705 && evento.mouse.x <= 801 &&
                     evento.mouse.y >= 552 && evento.mouse.y <= 645){
                         fprintf(stderr, "PERSO6\n");
                         selecao = 0;
+                        pers = 6;
                     }
                 }
             }
@@ -225,25 +233,27 @@ int main(void){
 			        checavalidespos(posx,posy,-dir_y,&posy);
 			        desenha = 1;
 			        tecl='W';
-                }
+			        pp = 1;                }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
                     posx -= dir_x;
                     checavalidespos(posx,posy,-dir_x,&posx);
 			        desenha=1;
 			        tecl='A';
+			        pp = 2;
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
 			        posy += dir_y;
 			        checavalidespos(posx,posy,dir_y,&posy);
 			        desenha=1;
 			        tecl='S';
-			        
+			        pp = 0;
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
                     posx += dir_x;
 			        checavalidespos(posx,posy,dir_x,&posx);
 			        desenha=1;
 			        tecl='D';
+			        pp = 3;
                 }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai 
                 sair = true;
@@ -262,7 +272,7 @@ int main(void){
 		           	// como usar:
 		           	// al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
 				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, 0, frameWidth, frameHeight, posx, posy, 0);
+				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, posx, posy, 0);
 				        setarVida(vida);
 				        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
 				        al_draw_bitmap(bvida, 0, 0, 0);
@@ -385,7 +395,7 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     }
  	al_set_window_title(janela, "IP GAME");
  	//quadrado = al_create_bitmap(20, 20);
- 	quadrado = al_load_bitmap("bon2.bmp"); // cria o 'personagem'
+ 	quadrado = al_load_bitmap("bon2.png"); // cria o 'personagem'
     if (!quadrado){
         fprintf(stderr, "Falha ao criar bitmap.\n");
         al_destroy_display(janela);
