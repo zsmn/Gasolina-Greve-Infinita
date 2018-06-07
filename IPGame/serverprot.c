@@ -13,12 +13,18 @@ int main() {
   int old;
   char dif;
   puts("o servidor esta funcionando!!");
-  while (1) 
-  {
-    int id = acceptConnection();
+  int count=0;
+  int id;
+  while(count<1){
+    id = acceptConnection();
     if (id != NO_CONNECTION) {
       puts("hey, alguem se conectou\n");
+      fprintf(stderr,"id do cara: %d",id);
+      count++;
     }
+  }
+  while (1) 
+  {
     struct msg_ret_t msgjog = recvMsg(pos);
     if (msgjog.status == MESSAGE_OK) {
       broadcast(pos,2*sizeof(int));
