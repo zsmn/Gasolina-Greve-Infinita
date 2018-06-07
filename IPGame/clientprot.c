@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "client.h"
+#define jogadores 4
 const float tempofade = 1.5;
 const int LARGURA_TELA = 960;
 const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas
@@ -49,18 +50,18 @@ int main(void){
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
         return -1;
     }
-    conectar();   
+    conectar(); 
+    int i;  
     int auxiliar = 0;
     int desenha = 1; //inicio desenha como 1
-    int posx = 8, dir_x = passo; //seto a posição e a passada do personagem
-    int posy = 17, dir_y = passo;
+    char posx = 8, dir_x = passo; //seto a posição e a passada do personagem
+    char posy = 17, dir_y = passo;
     int jogar = 1;
     int selecao;
     char matrizOcupada[40][61];
     preencheMatriz(matrizOcupada);
-    int pos[2];
-    pos[0]=posx;
-    pos[1]=posy;
+    char pos[jogadores][2];
+    
     /* variaveis da animacao do personagem */
  	const int maxFrame = 2;
  	int curFrame = 0;
@@ -70,7 +71,6 @@ int main(void){
  	int frameHeight = 38;
  	int pp;
  	int pers = 0;
- 	
  	/* variaveis usavas pra a musica */
  	int timer = 0;
  	int ttest = 0;
@@ -90,13 +90,13 @@ int main(void){
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
 
-   // fadein(fundo, 1); //a imagem do pano de fundo entra
-   // al_rest(tempofade); //dica durante 3 segundos
-   // fadeout(1);//e sai
-   // grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
-   // fadein(grupo, 1); //faz a aparecer a imagem do grupo
-   // al_rest(tempofade); //€spera 3 segundos
-   // fadeout(1); //e sai
+    fadein(fundo, 1); //a imagem do pano de fundo entra
+    al_rest(tempofade); //dica durante 3 segundos
+    fadeout(1);//e sai
+    grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
+    fadein(grupo, 1); //faz a aparecer a imagem do grupo
+    al_rest(tempofade); //€spera 3 segundos
+    fadeout(1); //e sai
     menu = al_load_bitmap("resources/menu.bmp");
     fadein(menu, 1);
 
@@ -219,6 +219,10 @@ int main(void){
  	setAudio("sounds/whenyouwere.ogg");//começa a melhor musica possivel
 
     while (!sair){//entra no loop do jogo
+        recvMsgFromServer(pos,DONT_WAIT);
+        for(i=0;i<jogadores;i++){
+         fprintf(stderr," jogadorID: %d posicao x:%d posicao y:%d\n",i,pos[i][0],pos[i][1]);
+        }
         while (!al_is_event_queue_empty(fila_eventos)){//se  acontecer algo
             ALLEGRO_EVENT evento;   //declara variavel eveno
             al_wait_for_event(fila_eventos, &evento);//esse evento fica na fila
@@ -245,10 +249,9 @@ int main(void){
 			        tecl='w';
 			        posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pp = 1;
-			        pos[0]=posx;
-			        pos[1]=posy;
-			        fprintf(stderr,"%d %d\n",pos[0],pos[1]);
-			        sendMsgToServer(pos,2*sizeof(int));
+			        pos[0][0]=posx;
+			        pos[0][1]=posy;
+			        sendMsgToServer(pos,2*sizeof(char));
 			        }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
                    // posx -= dir_x;
@@ -257,10 +260,9 @@ int main(void){
 			        tecl='a';
 			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pp = 2;
-			        pos[0]=posx;
-			        pos[1]=posy;
-			        fprintf(stderr,"%d %d\n",pos[0],pos[1]);
-			        sendMsgToServer(pos,2*sizeof(int));
+			        pos[0][0]=posx;
+			        pos[0][1]=posy;
+			        sendMsgToServer(pos,2*sizeof(char));
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
 			        //posy += dir_y;
@@ -269,10 +271,9 @@ int main(void){
 			        tecl='s';
 			        posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pp = 0;
-			        pos[0]=posx;
-			        pos[1]=posy;
-			        printf(stderr,"%d %d\n",pos[0],pos[1]);
-			        sendMsgToServer(pos,2*sizeof(int));
+			        pos[0][0]=posx;
+			        pos[0][1]=posy;
+			        sendMsgToServer(pos,2*sizeof(char));
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
                     //posx += dir_x;
@@ -281,10 +282,9 @@ int main(void){
 			        tecl='d';
 			        pp = 3;
 			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
-			        pos[0]=posx;
-			        pos[1]=posy;
-			        fprintf(stderr,"%d %d\n",pos[0],pos[1]);
-			        sendMsgToServer(pos,2*sizeof(int));
+			        pos[0][0]=posx;
+			        pos[0][1]=posy;
+			        sendMsgToServer(pos,2*sizeof(char));
                 }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai 
                 sair = true;
