@@ -1,16 +1,15 @@
-
 #include <allegro5/allegro.h>
-#include "client.h"
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include "client.h"
 const float tempofade = 1.5;
 const int LARGURA_TELA = 960;
 const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas
-const int passo = 3;  //declaro quantos passos ando
+const int passo = 1;  //declaro quantos passos ando
 ALLEGRO_DISPLAY *janela = NULL; //ponteiro para a janela
 ALLEGRO_AUDIO_STREAM *musica = NULL; //ponteiro para a musica
 ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;  //ponteiro para a fila de eventos
@@ -31,30 +30,37 @@ ALLEGRO_BITMAP *perso4 = NULL;
 ALLEGRO_BITMAP *perso5 = NULL;
 ALLEGRO_BITMAP *perso6 = NULL;
 /* personagens */
-ALLEGRO_BITMAP *bvida=NULL;
+
+/* vida de personagens */
+ALLEGRO_BITMAP *bvida = NULL;
 ALLEGRO_TIMER *timer = NULL; // inicia o timer
+//andar na matriz
 void fadeout(int velocidade);  //função pra dar o fadeout
 void checavalidespos(int posx,int posy,int passo,int* or);
 void fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
 void setAudio(char k[]); //função de audio
 void setarVida(int n);
 bool inicializar();  //função q inicializa 
-void conectar(unsigned short pos[2]);
+void preencheMatriz();// cria matriz
+int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//anda na matriz
+void conectar();
 int main(void){
     bool sair = false; //declaro a variavel sair
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
         return -1;
     }
-    int auxiliar = 0, testim = 0;
+    conectar();   
+    int auxiliar = 0;
     int desenha = 1; //inicio desenha como 1
-    unsigned short posx = 90, dir_x = passo; //seto a posição e a passada do personagem
-    unsigned short posy = 270, dir_y = passo;
+    int posx = 8, dir_x = passo; //seto a posição e a passada do personagem
+    int posy = 17, dir_y = passo;
     int jogar = 1;
     int selecao;
-    unsigned short pos[2];
+    char matrizOcupada[40][61];
+    preencheMatriz(matrizOcupada);
+    int pos[2];
     pos[0]=posx;
     pos[1]=posy;
-    conectar(pos);   
     /* variaveis da animacao do personagem */
  	const int maxFrame = 2;
  	int curFrame = 0;
@@ -62,8 +68,9 @@ int main(void){
  	int frameDelay = 5;
  	int frameWidth = 42;
  	int frameHeight = 38;
-   int pp;
+ 	int pp;
  	int pers = 0;
+ 	
  	/* variaveis usavas pra a musica */
  	int timer = 0;
  	int ttest = 0;
@@ -73,23 +80,26 @@ int main(void){
  	int tmpmusic[5] = {212, 152, 184, 280, 248};
  	char endmusic[5][30] = {"sounds/whenyouwere.ogg", "sounds/waitandbleed.ogg",
  	"sounds/timeofdying.ogg", "sounds/psychosocial.ogg", "sounds/freakonaleash.ogg"};
-   
+
     // variavel pra obter a tecla pressionada
     char tecl;
+
+    // variavel de vida do jogador
     int vida = 3;
-    char recep;
+
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
 
-    fadein(fundo, 1); //a imagem do pano de fundo entra
-    al_rest(tempofade); //dica durante 3 segundos
-    fadeout(1);//e sai
-    grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
-    fadein(grupo, 1); //faz a aparecer a imagem do grupo
-    al_rest(tempofade); //€spera 3 segundos
-    fadeout(1); //e sai
+   // fadein(fundo, 1); //a imagem do pano de fundo entra
+   // al_rest(tempofade); //dica durante 3 segundos
+   // fadeout(1);//e sai
+   // grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
+   // fadein(grupo, 1); //faz a aparecer a imagem do grupo
+   // al_rest(tempofade); //€spera 3 segundos
+   // fadeout(1); //e sai
     menu = al_load_bitmap("resources/menu.bmp");
     fadein(menu, 1);
+
     while(jogar != 0){
         al_draw_bitmap(menu, 0, 0, 0);
             while(!al_is_event_queue_empty(fila_eventos)){
@@ -107,6 +117,7 @@ int main(void){
                     if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&
                     evento.mouse.y >= 482 && evento.mouse.y <= 580){
                         jogar = 0;
+                        selecao = 0;
                     }
                     /* botao de sair */
                     if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&
@@ -121,9 +132,10 @@ int main(void){
         al_rest(0.1);
     }
 
-    fadeout(1);
+    //fadeout(1);
     personagens = al_load_bitmap("resources/perso.png");
-    fadein(personagens, 1);
+    al_draw_bitmap(personagens, 0, 0, 0);
+    //fadein(personagens, 1);
     
     perso1 = al_load_bitmap("resources/perso1.png");
     perso2 = al_load_bitmap("resources/perso2.png");
@@ -157,47 +169,55 @@ int main(void){
                     if(evento.mouse.x >= 157 && evento.mouse.x <= 339 &&
                     evento.mouse.y >= 339 && evento.mouse.y <= 432){
                         fprintf(stderr, "PERSO1\n");
+                        pers = 1;
                         selecao = 0;
                     }
                     if(evento.mouse.x >= 422 && evento.mouse.x <= 519 &&
                     evento.mouse.y >= 341 && evento.mouse.y <= 434){
                         fprintf(stderr, "PERSO2\n");
                         selecao = 0;
+                        pers = 2;
                     }
                     if(evento.mouse.x >= 709 && evento.mouse.x <= 807 &&
                     evento.mouse.y >= 342 && evento.mouse.y <= 435){
                         fprintf(stderr, "PERSO3\n");
                         selecao = 0;
+                        pers = 3;
                     }
                     if(evento.mouse.x >= 151 && evento.mouse.x <= 246 &&
                     evento.mouse.y >= 551 && evento.mouse.y <= 644){
                         fprintf(stderr, "PERSO4\n");
                         selecao = 0;
+                        pers = 4;
                     }
                     if(evento.mouse.x >= 420 && evento.mouse.x <= 515 &&
                     evento.mouse.y >= 552 && evento.mouse.y <= 645){
                         fprintf(stderr, "PERSO5\n");
                         selecao = 0;
+                        pers = 5;
                     }
                     if(evento.mouse.x >= 705 && evento.mouse.x <= 801 &&
                     evento.mouse.y >= 552 && evento.mouse.y <= 645){
                         fprintf(stderr, "PERSO6\n");
                         selecao = 0;
+                        pers = 6;
                     }
                 }
             }
         al_rest(0.1);
-    }                      
+    }                    
+    
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
 	al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
-	al_draw_bitmap_region(quadrado, 0, 0, frameWidth, frameHeight, posx, posy, 0); //desenha o quadradinho
+	al_draw_bitmap_region(quadrado, 0, 0, frameWidth, frameHeight, (posx * 16), (posy * 16), 0); //desenha o quadradinho
 	setarVida(vida);
+	//bvida = al_load_bitmap("resources/bvida3.png");
 	al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
 	al_draw_bitmap(bvida, 0, 0, 0);
 	al_flip_display();// bota tudo isso para o jogador
- 	setAudio("sounds/soundtest2.ogg");//começa a melhor musica possivel
-    char tecla;
+ 	setAudio("sounds/whenyouwere.ogg");//começa a melhor musica possivel
+
     while (!sair){//entra no loop do jogo
         while (!al_is_event_queue_empty(fila_eventos)){//se  acontecer algo
             ALLEGRO_EVENT evento;   //declara variavel eveno
@@ -218,52 +238,60 @@ int main(void){
 		        }
 
                  if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
-			        tecla='w';
-			        sendMsgToServer((void*)&tecla,1);
+			        //posy -= dir_y;
+			        //checavalidespos(posx,posy,-dir_y,&posy);
+			        
 			        desenha = 1;
-			        tecl='W';
-			        recvMsgFromServer(&recep,WAIT_FOR_IT);
-			        posx=pos[0];
-			        posy=pos[1]+recep;
-			        pp=1;
-                }
+			        tecl='w';
+			        posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
+			        pp = 1;
+			        pos[0]=posx;
+			        pos[1]=posy;
+			        printf("%d %d\n",pos[0],pos[1]);
+			        sendMsgToServer(pos,2*sizeof(int));
+			        }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
-                    tecla='a';
-                    sendMsgToServer((void*)&tecla,1);
+                   // posx -= dir_x;
+                    //checavalidespos(posx,posy,-dir_x,&posx);
 			        desenha=1;
-			        tecl='A';
-			        recvMsgFromServer(&pos[0],WAIT_FOR_IT);
-			        pp=2;
-			        posx=pos[0]+recep;
-			        posy=pos[1];
+			        tecl='a';
+			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
+			        pp = 2;
+			        pos[0]=posx;
+			        pos[1]=posy;
+			        printf("%d %d\n",pos[0],pos[1]);
+			        sendMsgToServer(pos,2*sizeof(int));
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
-                    tecla='s';
-			        sendMsgToServer((void*)&tecla,1);
+			        //posy += dir_y;
+			        //checavalidespos(posx,posy,dir_y,&posy);
 			        desenha=1;
-			        tecl='S';
-			        recvMsgFromServer(&pos[1], WAIT_FOR_IT);
-			        posx=pos[0];
-			        posy=pos[1]+recep;
-			        pp=0;
-			        
+			        tecl='s';
+			        posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
+			        pp = 0;
+			        pos[0]=posx;
+			        pos[1]=posy;
+			        printf("%d %d\n",pos[0],pos[1]);
+			        sendMsgToServer(pos,2*sizeof(int));
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
-                    tecla='d';
-			        sendMsgToServer((void*)&tecla,1);
+                    //posx += dir_x;
+			        //checavalidespos(posx,posy,dir_x,&posx);
 			        desenha=1;
-			        tecl='D';
-			        recvMsgFromServer(&pos[0],WAIT_FOR_IT);
-			        posx=pos[0]+recep;
-			        posy=pos[1];
-			        pp=3;
+			        tecl='d';
+			        pp = 3;
+			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
+			        pos[0]=posx;
+			        pos[1]=posy;
+			        printf("%d %d\n",pos[0],pos[1]);
+			        sendMsgToServer(pos,2*sizeof(int));
                 }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai 
                 sair = true;
                 return 0;
             }
             if(desenha && al_is_event_queue_empty(fila_eventos)) {
-	            if(tecl == 'S' || tecl == 'W' || tecl == 'A' || tecl == 'D'){
+	            if(tecl == 's' || tecl == 'w' || tecl == 'a' || tecl == 'd'){
 	            	for(auxiliar = 0; auxiliar < 5; auxiliar++){
 	            	if(frameCount++ >= frameDelay){
 		           		if(curFrame++ >= maxFrame){
@@ -274,9 +302,8 @@ int main(void){
 		           	}
 		           	// como usar:
 		           	// al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
-
 				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, 0, frameWidth, frameHeight, posx, posy, 0);
+				        al_draw_bitmap_region(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, (posx) * 16, (posy) * 16, 0);
 				        setarVida(vida);
 				        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
 				        al_draw_bitmap(bvida, 0, 0, 0);
@@ -287,7 +314,9 @@ int main(void){
 	            }
         	}
         }
+        
     }
+    
     al_destroy_audio_stream(musica);
     al_destroy_event_queue(fila_eventos);
     al_destroy_display(janela); //tudo termina
@@ -317,7 +346,7 @@ void fadeout(int velocidade){
  
     al_destroy_bitmap(buffer);
 }
- 
+
 void fadein(ALLEGRO_BITMAP *imagem, int velocidade)
 {
     if (velocidade < 0)
@@ -418,28 +447,111 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     al_start_timer(timer);
     return true;
 }
+
 void setAudio(char k[]){ //comeca musiquinha
 	al_set_audio_stream_playing(musica, false);
 	musica = al_load_audio_stream(k, 4, 1024);
  	al_attach_audio_stream_to_mixer(musica, al_get_default_mixer());
  	al_set_audio_stream_playing(musica, true);
 }
-void conectar(unsigned short pos[2]) {
-  enum conn_ret_t ans;
-  do{
-    ans = connectToServer("192.168.25.202");      
-    if (ans == SERVER_DOWN) {
-      puts("Servidor esta baixo :(!");
-    } else if (ans == SERVER_FULL) {
-      puts("servidor cheio!");
-    } else if (ans == SERVER_CLOSED) {
-      puts("servidor fechado para novas conexoes");
-    } else if(ans==SERVER_TIMEOUT) {
-      puts("servidor n respondeu");
+
+void preencheMatriz(char matrizOcupada[][61]){
+ 
+    strcpy(matrizOcupada[0],"111111111111111111111111111111111111111111111111111111111111");
+    strcpy(matrizOcupada[1],"111111111111111111111111111111111111111111111111111111111111");
+    strcpy(matrizOcupada[2],"111100000000000000000000000000000000000000000000000000001111");
+    strcpy(matrizOcupada[3],"111100000000000000000000000000000000000000000000000000001111");
+    strcpy(matrizOcupada[4],"111100000000000000000000011110001111110011111111111111001111");
+    strcpy(matrizOcupada[5],"111111111000000000111111111111111111110011111111111111001111");
+    strcpy(matrizOcupada[6],"111111111111111111111111100111111100000000000000000011001111");
+    strcpy(matrizOcupada[7],"111111111111111111111111100111111100000000000000000011001111");
+    strcpy(matrizOcupada[8],"111111111111111111111111100111111111111111111111111011001111");
+    strcpy(matrizOcupada[9],"111111111111111111111111100111111111111111111111111011001111");
+    strcpy(matrizOcupada[10],"111111111111111111111111100111111111111111111111111011111111");
+    strcpy(matrizOcupada[11],"111111111111111111111111101111111111111111111111111011111111");
+    strcpy(matrizOcupada[12],"111100000111111111000000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[13],"111100000111111111000000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[14],"111100000111111111100000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[15],"111100000000000000000000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[16],"111100000000000000000000000000000100000000000000000011111111");
+    strcpy(matrizOcupada[17],"111100000000000000000001111111111111111110000000000011111111");
+    strcpy(matrizOcupada[18],"111100000000000000000011111111111111111110001111111111111111");
+    strcpy(matrizOcupada[19],"111100000000111000000001000000111111111110001111111111111111");
+    strcpy(matrizOcupada[20],"111100000000111000000001000000111111111110001111111111001111");
+    strcpy(matrizOcupada[21],"111100000000000000000001111111111111111010001111111111001111");
+    strcpy(matrizOcupada[22],"111100000000000000000001111111100000000000000000000000001111");
+    strcpy(matrizOcupada[23],"111100000000000000000001111111111111111110001111111111001111");
+    strcpy(matrizOcupada[24],"111100000000000000000000000000000000000000000000000011001111");
+    strcpy(matrizOcupada[25],"111111110000000000000000000000000000000000000000000011001111");
+    strcpy(matrizOcupada[26],"111111110000000011110000000000001111111111111111111111001111");
+    strcpy(matrizOcupada[27],"111111111111111111111111000000001111111111111111111111001111");
+    strcpy(matrizOcupada[28],"111111111111111111111111000000001111111111111111111111001111");
+    strcpy(matrizOcupada[29],"111111111111111111111111000000001111111111111111111111001111");
+    strcpy(matrizOcupada[30],"111100000011100000001111000000000000000000000000000000001111");
+    strcpy(matrizOcupada[31],"111100000000000010001111000000000000000000000000000000001111");
+    strcpy(matrizOcupada[32],"111100000000000000001111000000000000000000000000000000001111");
+    strcpy(matrizOcupada[33],"111111111100111111111111000000000000000000000000000000001111");
+    strcpy(matrizOcupada[34],"111100000000000000001111111111111111111101111111111000001111");
+    strcpy(matrizOcupada[35],"111100000000000000000000111111111111111101111111111000001111");
+    strcpy(matrizOcupada[36],"111100000000000000000000000000000000000000110000000000111111");
+    strcpy(matrizOcupada[37],"111100000000000000000000000000000000000000111111111111111111");
+    strcpy(matrizOcupada[38],"111111111111111111111111111111111111111111111111111111111111");
+    strcpy(matrizOcupada[39],"111111111111111111111111111111111111111111111111111111111111");
+}
+int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]){
+ 
+    if(tecla == 'w'){
+         printf(" ");
+        if(matrizOcupada[posicaoY-1][posicaoX]=='0'){
+            matrizOcupada[posicaoY][posicaoX] = '0';
+            matrizOcupada[posicaoY-1][posicaoX] = '1';
+            posicaoY--;
+            return posicaoY;
+        }
+        else{
+            return posicaoY;
+        }
     }
-  }while(ans!=SERVER_UP);
-  sendMsgToServer(pos, 2*sizeof(short));
-  puts("estamos indo");
+    else{
+        if(tecla == 'a'){
+             printf(" ");
+            if(matrizOcupada[posicaoY][posicaoX-1]=='0'){
+                matrizOcupada[posicaoY][posicaoX]='0';
+                matrizOcupada[posicaoY][posicaoX-1]='1';
+                posicaoX--;
+                return posicaoX;
+            }
+            else{
+                return posicaoX;
+            }
+        }
+        else{
+            if(tecla == 's'){
+                printf(" ");
+                if(matrizOcupada[posicaoY+1][posicaoX]=='0'){
+                    matrizOcupada[posicaoY][posicaoX]='0';
+                    matrizOcupada[posicaoY+1][posicaoX]='1';
+                    posicaoY++;
+                    return posicaoY;
+                }
+                else{
+                    return posicaoY;
+                }  
+            }
+            else if(tecla == 'd'){
+                printf(" ");
+                if(matrizOcupada[posicaoY][posicaoX+1]=='0'){;
+                    matrizOcupada[posicaoY][posicaoX]='0';
+                    matrizOcupada[posicaoY][posicaoX+1]='1';
+                    posicaoX++;
+                    return posicaoX;
+                }
+                else{
+                    return posicaoX;
+                }
+            }
+        }
+    }
 }
 void setarVida(int n){
     if(n == 3){
@@ -451,4 +563,20 @@ void setarVida(int n){
 	}else{
 	    bvida = al_load_bitmap("resources/bvida0.png");
 	}
+}
+void conectar() {
+  enum conn_ret_t ans;
+  do{
+    ans = connectToServer("172.22.73.11");      
+    if (ans == SERVER_DOWN) {
+      puts("Servidor esta baixo :(!");
+    } else if (ans == SERVER_FULL) {
+      puts("servidor cheio!");
+    } else if (ans == SERVER_CLOSED) {
+      puts("servidor fechado para novas conexoes");
+    } else if(ans==SERVER_TIMEOUT) {
+      puts("servidor n respondeu");
+    }
+  }while(ans!=SERVER_UP);
+  puts("estamos indo");
 }
