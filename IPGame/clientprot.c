@@ -247,7 +247,7 @@ int main(void){
 			        pp = 1;
 			        pos[0]=posx;
 			        pos[1]=posy;
-			        printf("%d %d\n",pos[0],pos[1]);
+			        fprintf(stderr,"%d %d\n",pos[0],pos[1]);
 			        sendMsgToServer(pos,2*sizeof(int));
 			        }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
@@ -259,7 +259,7 @@ int main(void){
 			        pp = 2;
 			        pos[0]=posx;
 			        pos[1]=posy;
-			        printf("%d %d\n",pos[0],pos[1]);
+			        fprintf(stderr,"%d %d\n",pos[0],pos[1]);
 			        sendMsgToServer(pos,2*sizeof(int));
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
@@ -271,7 +271,7 @@ int main(void){
 			        pp = 0;
 			        pos[0]=posx;
 			        pos[1]=posy;
-			        printf("%d %d\n",pos[0],pos[1]);
+			        printf(stderr,"%d %d\n",pos[0],pos[1]);
 			        sendMsgToServer(pos,2*sizeof(int));
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
@@ -283,7 +283,7 @@ int main(void){
 			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pos[0]=posx;
 			        pos[1]=posy;
-			        printf("%d %d\n",pos[0],pos[1]);
+			        fprintf(stderr,"%d %d\n",pos[0],pos[1]);
 			        sendMsgToServer(pos,2*sizeof(int));
                 }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai 
@@ -501,7 +501,6 @@ void preencheMatriz(char matrizOcupada[][61]){
 int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]){
  
     if(tecla == 'w'){
-         printf(" ");
         if(matrizOcupada[posicaoY-1][posicaoX]=='0'){
             matrizOcupada[posicaoY][posicaoX] = '0';
             matrizOcupada[posicaoY-1][posicaoX] = '1';
@@ -514,7 +513,6 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
     }
     else{
         if(tecla == 'a'){
-             printf(" ");
             if(matrizOcupada[posicaoY][posicaoX-1]=='0'){
                 matrizOcupada[posicaoY][posicaoX]='0';
                 matrizOcupada[posicaoY][posicaoX-1]='1';
@@ -527,7 +525,6 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
         }
         else{
             if(tecla == 's'){
-                printf(" ");
                 if(matrizOcupada[posicaoY+1][posicaoX]=='0'){
                     matrizOcupada[posicaoY][posicaoX]='0';
                     matrizOcupada[posicaoY+1][posicaoX]='1';
@@ -539,7 +536,6 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
                 }  
             }
             else if(tecla == 'd'){
-                printf(" ");
                 if(matrizOcupada[posicaoY][posicaoX+1]=='0'){;
                     matrizOcupada[posicaoY][posicaoX]='0';
                     matrizOcupada[posicaoY][posicaoX+1]='1';
