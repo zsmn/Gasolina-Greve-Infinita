@@ -6,8 +6,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "client.h"
-#define jogadores 2
-#define IP "172.20.4.13"
+#define jogadores 3
+#define IP "172.20.5.16"
 void conectar();
 int id;
 const float tempofade = 0.3;
