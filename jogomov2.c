@@ -18,6 +18,7 @@ ALLEGRO_BITMAP *menu = NULL;  //ponteiro para o menu do jogo
 ALLEGRO_BITMAP *grupo = NULL;   //lonteiro para o bitmap da imagem do grupo
 ALLEGRO_BITMAP *fundo = NULL; //ponteiro do pano de fundo
 ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
+ALLEGRO_BITMAP *tiro = NULL; //bala
 
 /* tela de seleção de personagens */
 ALLEGRO_BITMAP *personagens = NULL; // tela da seleção de personagens
@@ -53,6 +54,9 @@ int main(void){
     int desenha = 1; //inicio desenha como 1
     int posx = 8, dir_x = passo; //seto a posição e a passada do personagem
     int posy = 17, dir_y = passo;
+    float posx_bala;
+    float posy_bala;
+    float deslocamento=0;//variável que fará a bala se deslocar
     int jogar = 1;
     int selecao;
     char matrizOcupada[40][61];
@@ -80,6 +84,7 @@ int main(void){
 
     // variavel pra obter a tecla pressionada
     char tecl;
+    char tecl2;//armazena a última tecla digitada para a bala "saber" de onde irá sair
 
     // variavel de vida do jogador
     int vida = 3;
@@ -217,7 +222,7 @@ int main(void){
 
     while (!sair){//entra no loop do jogo
         while (!al_is_event_queue_empty(fila_eventos)){//se  acontecer algo
-            ALLEGRO_EVENT evento;   //declara variavel eveno
+            ALLEGRO_EVENT evento;   //declara variavel evento
             al_wait_for_event(fila_eventos, &evento);//esse evento fica na fila
             
 		        if(evento.type == ALLEGRO_EVENT_TIMER){
@@ -233,13 +238,14 @@ int main(void){
 		                }
 		            }
 		        }
-
+		
+		
                  if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
 			        //posy -= dir_y;
 			        //checavalidespos(posx,posy,-dir_y,&posy);
 			        
 			        desenha = 1;
-			        tecl='w';
+			        tecl='w'; tecl2=tecl;
 			        posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pp = 1;
 			        }
@@ -247,7 +253,7 @@ int main(void){
                    // posx -= dir_x;
                     //checavalidespos(posx,posy,-dir_x,&posx);
 			        desenha=1;
-			        tecl='a';
+			        tecl='a';tecl2=tecl;
 			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pp = 2;
                 }
@@ -255,7 +261,7 @@ int main(void){
 			        //posy += dir_y;
 			        //checavalidespos(posx,posy,dir_y,&posy);
 			        desenha=1;
-			        tecl='s';
+			        tecl='s';tecl2=tecl;
 			        posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
 			        pp = 0;
                 }
@@ -263,10 +269,44 @@ int main(void){
                     //posx += dir_x;
 			        //checavalidespos(posx,posy,dir_x,&posx);
 			        desenha=1;
-			        tecl='d';
+			        tecl='d';tecl2=tecl;
 			        pp = 3;
 			        posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
                 }
+		if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && (tecl2=='a'||tecl2=='s') && deslocamento == 0)
+		{
+			if(evento.mouse.x - posx < 0 && (evento.mouse.y - posy == 5 || evento.mouse.y - posy == -5))
+			{
+			posx_bala=posx-0.3; posy_bala=posy+0.5;
+			tiro = al_load_bitmap("resources/sprite do tiro.bmp");
+			al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
+			al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco no tamanho determinado -> 21 x 19 pixels
+			setarVida(vida);
+			al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
+			al_convert_mask_to_alpha(tiro,al_map_rgb(255,0,255));
+			al_draw_scaled_bitmap(tiro, 19, 18, 19, 18, ((posx_bala) * 16), ((posy_bala) * 16),9.5,9, 0);
+			deslocamento-=0.1;
+			al_draw_bitmap(bvida, 0, 0, 0);
+			al_flip_display();
+			al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
+			}
+		}
+		else
+		if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && deslocamento == 0)
+		{
+			posx_bala=posx+1; posy_bala=posy+0.5;
+			tiro = al_load_bitmap("resources/sprite do tiro.bmp");
+			al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
+			al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco no tamanho determinado -> 21 x 19 pixels
+			setarVida(vida);
+			al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
+			al_convert_mask_to_alpha(tiro,al_map_rgb(255,0,255));
+			al_draw_scaled_bitmap(tiro, 19, 18, 19, 18, ((posx_bala) * 16), ((posy_bala) * 16),9.5,9, 0);
+			deslocamento+=0.6;
+			al_draw_bitmap(bvida, 0, 0, 0);
+			al_flip_display();
+			al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
+		}
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai 
                 sair = true;
                 return 0;
@@ -281,6 +321,8 @@ int main(void){
 
 		           		frameCount = 0;
 		           	}
+				if(deslocamento==0)
+				{
 		           	// como usar:
 		           	// al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
 				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
@@ -290,9 +332,72 @@ int main(void){
 				        al_draw_bitmap(bvida, 0, 0, 0);
 			           	al_flip_display();
 			           	al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
+				}
+				else
+				{
+					// como usar:
+		           	// al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
+				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
+				        al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
+				        setarVida(vida);
+				        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
+					al_convert_mask_to_alpha(tiro,al_map_rgb(255,0,255));
+					if(((posx_bala+deslocamento) * 16)<961 && ((posx_bala+deslocamento) * 16)>0 && ((posy_bala+deslocamento)*16)<703 ((posy_bala+deslocamento)*16)>0)
+					{
+					if(tecl2=='w')
+					{
+					al_draw_scaled_bitmap(tiro, 19, 18, 19, 18, ((posx_bala) * 16), ((posy_bala+deslocamento) * 16),9.5,9, 0);
+					deslocamento-=0.6;
+					}
+					else
+					if(tecl2=='a')
+					{
+					al_draw_scaled_bitmap(tiro, 19, 18, 19, 18, ((posx_bala+deslocamento) * 16), ((posy_bala) * 16),9.5,9, 0);
+					deslocamento-=0.6;
+					}
+					else
+					if(tecl2=='s')
+					{
+					al_draw_scaled_bitmap(tiro, 19, 18, 19, 18, ((posx_bala) * 16), ((posy_bala+deslocamento) * 16),9.5,9, 0);
+					deslocamento+=0.6;
+					}
+					else
+					if(tecl2=='d')
+					{
+					al_draw_scaled_bitmap(tiro, 19, 18, 19, 18, ((posx_bala+deslocamento) * 16), ((posy_bala) * 16),9.5,9, 0);
+					deslocamento+=0.6;
+					}
+					}
+					else
+					deslocamento=0;
+				        al_draw_bitmap(bvida, 0, 0, 0);
+			           	al_flip_display();
+			           	al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
+					}
+				}
 		           	}
 		           	tecl = '0'; // evita que entre no loop dnv
 	            }
+			if(deslocamento!=0)
+			{
+				// como usar:
+		           	// al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
+				        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
+				        al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
+				        setarVida(vida);
+				        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
+					al_convert_mask_to_alpha(tiro,al_map_rgb(255,0,255));
+					if(((posx_bala+deslocamento) * 16)<961)
+					{
+					al_draw_scaled_bitmap(tiro, 19, 18, 19, 18, ((posx_bala+deslocamento) * 16), ((posy_bala) * 16),9.5,9, 0);
+					deslocamento+=0.6;
+					}
+					else
+					deslocamento=0;
+				        al_draw_bitmap(bvida, 0, 0, 0);
+			           	al_flip_display();
+			           	al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
+			}
         	}
         }
     }
