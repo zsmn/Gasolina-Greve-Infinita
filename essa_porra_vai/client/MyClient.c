@@ -6,11 +6,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "client.h"
-#define jogadores 2
-#define IP "172.20.5.6"
+#define jogadores 3
+#define IP "172.20.5.16"
 void conectar();
 int id;
-char escolhas[jogadores];
 const float tempofade = 0.3;
 const int LARGURA_TELA = 960;
 const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas
@@ -24,7 +23,11 @@ int frameWidth = 42;
 int frameHeight = 38;
 int curFrame = 0;
 char pos[jogadores][2];
-char pers = 0;
+ 
+/* armazenamento da resposta do server e uso da ampulheta */
+int status = 0;
+char amp[100];
+
 ALLEGRO_DISPLAY *janela = NULL; //ponteiro para a janela
 ALLEGRO_AUDIO_STREAM *musica = NULL; //ponteiro para a musica
 ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;  //ponteiro para a fila de eventos
@@ -35,6 +38,7 @@ ALLEGRO_BITMAP *fundo = NULL; //ponteiro do pano de fundo
 ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
 
 ALLEGRO_BITMAP *loading = NULL;
+ALLEGRO_BITMAP *ampulheta = NULL;
 
 ALLEGRO_BITMAP* player[jogadores];
  
@@ -83,9 +87,7 @@ int main(void){
     const int maxFrame = 2;
     int frameCount = 0;
     int frameDelay = 1;
-
-    /* armazenamento da resposta do server */
-    int status = 0;
+    int pers = 0;
    
     /* variaveis usavas pra a musica */
     int timer = 0;
@@ -225,12 +227,11 @@ al_rest(tempofade); //dica durante 3 segundos
         al_rest(0.1);
     } 
 	conectar();                   
-	loading = al_load_bitmap("resources/loading.jpeg");
-    //while(status != 1){
-	al_draw_bitmap(loading, 0, 0, 0);
-        al_flip_display();
-    //}
-        recvMsgFromServer(escolhas,WAIT_FOR_IT);
+	loading = al_load_bitmap("resources/loading.png");
+
+    while(status != 1){
+		drawHourGlass();
+    }
 
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
@@ -339,7 +340,25 @@ al_rest(tempofade); //dica durante 3 segundos
     al_destroy_display(janela); //tudo termina
     return 0;
 }
- 
+
+void drawHourGlass(){
+	int i;
+	recvMsgFromServer(&status,DONT_WAIT);
+	loading = al_load_bitmap("resources/loading.png");
+	
+	al_draw_bitmap(loading, 0, 0, 0);
+	for(i = 0; i < 240 && status != 1; i++){
+		recvMsgFromServer(&status,DONT_WAIT);
+		sprintf(amp, "resources/ampulheta/output-%d.png", i);
+		al_clear_to_color(al_map_rgb(0, 0, 0));
+		ampulheta = al_load_bitmap(amp);
+		al_draw_bitmap(loading, 0, 0, 0);
+		al_draw_scaled_bitmap(ampulheta, 0, 0, 285, 215, 300, 395, 385, 315, 0);
+		al_rest(0.04);
+		al_flip_display();
+	}
+}
+
 void desenhar(){
     int i = 0;
     al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
@@ -350,7 +369,7 @@ void desenhar(){
  
     /* printa as posicoes dos jogadores */
     for(i=0;i<jogadores;i++){
-        fprintf(stderr," jogadorID: %d posicao x:%d posicao y:%d\n que escolheU: %d\n",i,pos[i][0],pos[i][1],escolhas[i]);
+        fprintf(stderr," jogadorID: %d posicao x:%d posicao y:%d\n",i,pos[i][0],pos[i][1]);
     }
     fprintf(stderr,"obs: meu id eh: %d",id);
  
@@ -619,7 +638,5 @@ void conectar() {
     }
   }while(ans!=SERVER_UP);
   recvMsgFromServer(&id,WAIT_FOR_IT);
-  fprintf(stderr,"ei, seu id eh: %d\n",id); 
-  sendMsgToServer(&pers,1);
-  
+  fprintf(stderr,"ei, seu id eh: %d\n",id);
 }
