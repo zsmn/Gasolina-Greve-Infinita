@@ -32,7 +32,9 @@ ALLEGRO_BITMAP *menu = NULL;  //ponteiro para o menu do jogo
 ALLEGRO_BITMAP *grupo = NULL;   //lonteiro para o bitmap da imagem do grupo
 ALLEGRO_BITMAP *fundo = NULL; //ponteiro do pano de fundo
 ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
- 
+
+ALLEGRO_BITMAP *loading = NULL;
+
 ALLEGRO_BITMAP *player1 = NULL;
 ALLEGRO_BITMAP *player2 = NULL;
  
@@ -62,7 +64,6 @@ void preencheMatriz();// cria matriz
 void desenhar();
 int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//anda na matriz
 int main(void){
-    conectar();
     system("clear");
     fprintf(stderr,"essa porra sai");
     bool sair = false; //declaro a variavel sair
@@ -83,6 +84,9 @@ int main(void){
     int frameCount = 0;
     int frameDelay = 1;
     int pers = 0;
+
+    /* armazenamento da resposta do server */
+    int status = 0;
    
     /* variaveis usavas pra a musica */
     int timer = 0;
@@ -221,7 +225,15 @@ al_rest(tempofade); //dica durante 3 segundos
                 }
             }
         al_rest(0.1);
-    }                    
+    } 
+	conectar();                   
+	loading = al_load_bitmap("resources/load.png");
+    //while(status != 1){
+	al_draw_bitmap(loading, 0, 0, 0);
+        al_flip_display();
+    //}
+        recvMsgFromServer(&status,WAIT_FOR_IT);
+
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
     al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
