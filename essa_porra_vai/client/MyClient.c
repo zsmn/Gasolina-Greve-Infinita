@@ -60,30 +60,20 @@ void desenhar();
 ******************Inicio da Main-------Seja Bem-vindo********************************
 *************************************************************************************/
 int main(void){
-    system("clear"); 
-    fprintf(stderr,"Server conectado\n");
-    bool sair = false; //declaro a variavel sair
-    if (!inicializar()){ //chamo inicializar, se der errado paro programa
-        return -1;
-    }
-    int i;  
+    // declaracao de variaveis
+    int i,selecao;  
     int auxiliar = 0;
     int desenha = 1; //inicio desenha como 1
     int jogar = 1;
-    int selecao;
     int dir_x = passo, dir_y = passo;
     char matrizOcupada[40][61];
-    preencheMatriz(matrizOcupada);
-   
     /* variaveis da animacao do personagem */
     const int maxFrame = 2;
     int frameCount = 0;
     int frameDelay = 1;
     int pers = 0;
-
     /* armazenamento da resposta do server */
     int status = 0;
-   
     /* variaveis usavas pra a musica */
     int timer = 0;
     int ttest = 0;
@@ -92,16 +82,29 @@ int main(void){
     int tmpmusic[5] = {212, 152, 184, 280, 248};
     char endmusic[5][30] = {"sounds/whenyouwere.ogg", "sounds/waitandbleed.ogg",
     "sounds/timeofdying.ogg", "sounds/psychosocial.ogg", "sounds/freakonaleash.ogg"};
- 
     // variavel pra obter a tecla pressionada
     char tecl;
-    // variavel de vida do jogador
-   fadein(fundo, 1); //a imagem do pano de fundo entra
+    //Variavel que administra po fechamento do jogo
+    bool sair = false;
+
+
+
+    system("clear"); 
+    fprintf(stderr,"Server conectado\n");
+    if (!inicializar()){ //chamo inicializar, se der errado paro programa
+        return -1;
+    }
+
+    preencheMatriz(matrizOcupada);
+
+   fadein(fundo, 1); 
+
+
    
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
 	al_draw_bitmap(fundo, 0, 0, 0);   
-al_rest(tempofade); //dica durante 3 segundos
+    al_rest(tempofade); //dica durante 3 segundos
     fadeout(1);//e sai
     grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
     fadein(grupo, 1); //faz a aparecer a imagem do grupo
