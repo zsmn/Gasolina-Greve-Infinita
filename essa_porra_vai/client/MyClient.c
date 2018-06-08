@@ -10,7 +10,7 @@
 #define IP "172.20.4.20"
 void conectar();
 int id;
-const float tempofade = 1.5;
+const float tempofade = 0.3;
 const int LARGURA_TELA = 960;
 const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas
 const int passo = 1;  //declaro quantos passos ando
@@ -254,7 +254,8 @@ al_rest(tempofade); //dica durante 3 segundos
                         }
                     }
                 }
- 
+ 		if (evento.type == ALLEGRO_EVENT_KEY_DOWN)
+            	{
                  if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
                    
                     desenha = 1;
@@ -302,6 +303,7 @@ al_rest(tempofade); //dica durante 3 segundos
                     sendMsgToServer(pos[id],2*sizeof(char));
                     desenhar();
                 }
+	     }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai
                 sair = true;
                 return 0;
