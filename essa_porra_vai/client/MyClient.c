@@ -1,3 +1,4 @@
+// inclui todas bibliotecas uteis
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
@@ -6,65 +7,61 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "client.h"
-#define jogadores 4
-#define IP "172.20.5.16"
-void conectar();
-int id;
-const float tempofade = 0.3;
-const int LARGURA_TELA = 960;
-const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas
-const int passo = 1;  //declaro quantos passos ando
- 
+#define jogadores 3
+#define IP "172.20.5.18" // ip deve ser mudado
+// declara as variaveis globais
 int vida = 3;
-char posx = 8; //seto a posição e a passada do personagem
-char posy = 17;
-int pp;
+char posx = 8; 
+char posy = 17; 
+int pp;                  
 int frameWidth = 42;
 int frameHeight = 38;
 int curFrame = 0;
 char pos[jogadores][2];
- 
-ALLEGRO_DISPLAY *janela = NULL; //ponteiro para a janela
-ALLEGRO_AUDIO_STREAM *musica = NULL; //ponteiro para a musica
+void conectar();
+int id;
+const float tempofade = 0.3;
+const int LARGURA_TELA = 960;
+const int ALTURA_TELA = 703; 
+const int passo = 1;  
+// declara funcoes da allegro
+ALLEGRO_DISPLAY *janela = NULL;            //ponteiro para a janela
+ALLEGRO_AUDIO_STREAM *musica = NULL;       //ponteiro para a musica
 ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;  //ponteiro para a fila de eventos
-ALLEGRO_BITMAP *imagem = NULL;  //ponteiro para a imagem
-ALLEGRO_BITMAP *menu = NULL;  //ponteiro para o menu do jogo
-ALLEGRO_BITMAP *grupo = NULL;   //lonteiro para o bitmap da imagem do grupo
-ALLEGRO_BITMAP *fundo = NULL; //ponteiro do pano de fundo
-ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
-
+ALLEGRO_BITMAP *imagem = NULL;             //ponteiro para a imagem
+ALLEGRO_BITMAP *menu = NULL;               //ponteiro para o menu do jogo
+ALLEGRO_BITMAP *grupo = NULL;     	   //lonteiro para o bitmap da imagem do grupo
+ALLEGRO_BITMAP *fundo = NULL;              //ponteiro do pano de fundo
+ALLEGRO_BITMAP *quadrado = NULL;           //quadradinho q eh o jogador
 ALLEGRO_BITMAP *loading = NULL;
-
 ALLEGRO_BITMAP* player[jogadores];
- 
 /* tela de seleção de personagens */
 ALLEGRO_BITMAP *personagens = NULL; // tela da seleção de personagens
- 
 /* personagens */
-ALLEGRO_BITMAP *perso1 = NULL;
-ALLEGRO_BITMAP *perso2 = NULL;
-ALLEGRO_BITMAP *perso3 = NULL;
-ALLEGRO_BITMAP *perso4 = NULL;
-ALLEGRO_BITMAP *perso5 = NULL;
-ALLEGRO_BITMAP *perso6 = NULL;
-/* personagens */
- 
+ALLEGRO_BITMAP *perso1 = NULL; // define ponteiro para o sprite do personagem 1
+ALLEGRO_BITMAP *perso2 = NULL; // define ponteiro para o sprite do personagem 2
+ALLEGRO_BITMAP *perso3 = NULL; // define ponteiro para o sprite do personagem 3
+ALLEGRO_BITMAP *perso4 = NULL; // define ponteiro para o sprite do personagem 4
+ALLEGRO_BITMAP *perso5 = NULL; // define ponteiro para o sprite do personagem 5
+ALLEGRO_BITMAP *perso6 = NULL; // define ponteiro para o sprite do personagem 6
 /* vida de personagens */
-ALLEGRO_BITMAP *bvida = NULL;
-ALLEGRO_TIMER *timer = NULL; // inicia o timer
- 
-int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//andar na matriz
-void fadeout(int velocidade);  //função pra dar o fadeout
-void fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
-void setAudio(char k[]); //função de audio
+ALLEGRO_BITMAP *bvida = NULL; 
+ALLEGRO_TIMER *timer = NULL; 
+/* assinatura das funcoes */
+int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);
+void fadeout(int velocidade); 
+void fadein(ALLEGRO_BITMAP *imagem, int velocidade);
+void setAudio(char k[]);
 void setarVida(int n);
-bool inicializar();  //função q inicializa
-void preencheMatriz();// cria matriz
+bool inicializar();
+void preencheMatriz();
 void desenhar();
-int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//anda na matriz
+/************************************************************************************
+******************Inicio da Main-------Seja Bem-vindo********************************
+*************************************************************************************/
 int main(void){
-    system("clear");
-    fprintf(stderr,"essa porra sai");
+    system("clear"); 
+    fprintf(stderr,"Server conectado\n");
     bool sair = false; //declaro a variavel sair
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
         return -1;
