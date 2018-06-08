@@ -35,7 +35,7 @@ int main() {
 	aceitaConexao(); // a conexao fica aberta para os usuarios entrarem
   while (1){
     mensagem msgjog = recvMsg(aux);
-    if (msgjog.status == MESSAGE_OK) {
+    if (msgjog.status == MESSAGE_OK){
       pos[msgjog.client_id][0]=aux[0];
       pos[msgjog.client_id][1]=aux[1];
       //broadcast(pos,2*sizeof(int));
