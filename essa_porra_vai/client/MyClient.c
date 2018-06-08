@@ -1,4 +1,3 @@
-// inclui todas bibliotecas uteis
 #include <allegro5/allegro.h>
 #include <allegro5/allegro_audio.h>
 #include <allegro5/allegro_acodec.h>
@@ -7,73 +6,87 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "client.h"
-#define jogadores 3
-#define IP "172.20.5.18" // ip deve ser mudado
-// declara as variaveis globais
+#define jogadores 2
+#define IP "172.20.5.6"
+void conectar();
+int id;
+char escolhas[jogadores];
+const float tempofade = 0.3;
+const int LARGURA_TELA = 960;
+const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas
+const int passo = 1;  //declaro quantos passos ando
+ 
 int vida = 3;
-char posx = 8; 
-char posy = 17; 
-int pp;                  
+char posx = 8; //seto a posição e a passada do personagem
+char posy = 17;
+int pp;
 int frameWidth = 42;
 int frameHeight = 38;
 int curFrame = 0;
 char pos[jogadores][2];
-void conectar();
-int id;
-const float tempofade = 0.3;
-const int LARGURA_TELA = 960;
-const int ALTURA_TELA = 703; 
-const int passo = 1;  
-// declara funcoes da allegro
-ALLEGRO_DISPLAY *janela = NULL;            //ponteiro para a janela
-ALLEGRO_AUDIO_STREAM *musica = NULL;       //ponteiro para a musica
+char pers = 0;
+ALLEGRO_DISPLAY *janela = NULL; //ponteiro para a janela
+ALLEGRO_AUDIO_STREAM *musica = NULL; //ponteiro para a musica
 ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;  //ponteiro para a fila de eventos
-ALLEGRO_BITMAP *imagem = NULL;             //ponteiro para a imagem
-ALLEGRO_BITMAP *menu = NULL;               //ponteiro para o menu do jogo
-ALLEGRO_BITMAP *grupo = NULL;     	   //lonteiro para o bitmap da imagem do grupo
-ALLEGRO_BITMAP *fundo = NULL;              //ponteiro do pano de fundo
-ALLEGRO_BITMAP *quadrado = NULL;           //quadradinho q eh o jogador
+ALLEGRO_BITMAP *imagem = NULL;  //ponteiro para a imagem
+ALLEGRO_BITMAP *menu = NULL;  //ponteiro para o menu do jogo
+ALLEGRO_BITMAP *grupo = NULL;   //lonteiro para o bitmap da imagem do grupo
+ALLEGRO_BITMAP *fundo = NULL; //ponteiro do pano de fundo
+ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
+
 ALLEGRO_BITMAP *loading = NULL;
+
 ALLEGRO_BITMAP* player[jogadores];
+ 
 /* tela de seleção de personagens */
 ALLEGRO_BITMAP *personagens = NULL; // tela da seleção de personagens
+ 
 /* personagens */
-ALLEGRO_BITMAP *perso1 = NULL; // define ponteiro para o sprite do personagem 1
-ALLEGRO_BITMAP *perso2 = NULL; // define ponteiro para o sprite do personagem 2
-ALLEGRO_BITMAP *perso3 = NULL; // define ponteiro para o sprite do personagem 3
-ALLEGRO_BITMAP *perso4 = NULL; // define ponteiro para o sprite do personagem 4
-ALLEGRO_BITMAP *perso5 = NULL; // define ponteiro para o sprite do personagem 5
-ALLEGRO_BITMAP *perso6 = NULL; // define ponteiro para o sprite do personagem 6
+ALLEGRO_BITMAP *perso1 = NULL;
+ALLEGRO_BITMAP *perso2 = NULL;
+ALLEGRO_BITMAP *perso3 = NULL;
+ALLEGRO_BITMAP *perso4 = NULL;
+ALLEGRO_BITMAP *perso5 = NULL;
+ALLEGRO_BITMAP *perso6 = NULL;
+/* personagens */
+ 
 /* vida de personagens */
-ALLEGRO_BITMAP *bvida = NULL; 
-ALLEGRO_TIMER *timer = NULL; 
-/* assinatura das funcoes */
-int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);
-void fadeout(int velocidade); 
-void fadein(ALLEGRO_BITMAP *imagem, int velocidade);
-void setAudio(char k[]);
+ALLEGRO_BITMAP *bvida = NULL;
+ALLEGRO_TIMER *timer = NULL; // inicia o timer
+ 
+int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//andar na matriz
+void fadeout(int velocidade);  //função pra dar o fadeout
+void fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
+void setAudio(char k[]); //função de audio
 void setarVida(int n);
-bool inicializar();
-void preencheMatriz();
+bool inicializar();  //função q inicializa
+void preencheMatriz();// cria matriz
 void desenhar();
-/************************************************************************************
-******************Inicio da Main-------Seja Bem-vindo********************************
-*************************************************************************************/
+int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//anda na matriz
 int main(void){
-    // declaracao de variaveis
-    int i,selecao;  
+    system("clear");
+    fprintf(stderr,"essa porra sai");
+    bool sair = false; //declaro a variavel sair
+    if (!inicializar()){ //chamo inicializar, se der errado paro programa
+        return -1;
+    }
+    int i;  
     int auxiliar = 0;
     int desenha = 1; //inicio desenha como 1
     int jogar = 1;
+    int selecao;
     int dir_x = passo, dir_y = passo;
     char matrizOcupada[40][61];
+    preencheMatriz(matrizOcupada);
+   
     /* variaveis da animacao do personagem */
     const int maxFrame = 2;
     int frameCount = 0;
     int frameDelay = 1;
-    int pers = 0;
+
     /* armazenamento da resposta do server */
     int status = 0;
+   
     /* variaveis usavas pra a musica */
     int timer = 0;
     int ttest = 0;
@@ -82,29 +95,16 @@ int main(void){
     int tmpmusic[5] = {212, 152, 184, 280, 248};
     char endmusic[5][30] = {"sounds/whenyouwere.ogg", "sounds/waitandbleed.ogg",
     "sounds/timeofdying.ogg", "sounds/psychosocial.ogg", "sounds/freakonaleash.ogg"};
+ 
     // variavel pra obter a tecla pressionada
     char tecl;
-    //Variavel que administra po fechamento do jogo
-    bool sair = false;
-
-
-
-    system("clear"); 
-    fprintf(stderr,"Server conectado\n");
-    if (!inicializar()){ //chamo inicializar, se der errado paro programa
-        return -1;
-    }
-
-    preencheMatriz(matrizOcupada);
-
-   fadein(fundo, 1); 
-
-
+    // variavel de vida do jogador
+   fadein(fundo, 1); //a imagem do pano de fundo entra
    
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
 	al_draw_bitmap(fundo, 0, 0, 0);   
-    al_rest(tempofade); //dica durante 3 segundos
+al_rest(tempofade); //dica durante 3 segundos
     fadeout(1);//e sai
     grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
     fadein(grupo, 1); //faz a aparecer a imagem do grupo
@@ -230,7 +230,7 @@ int main(void){
 	al_draw_bitmap(loading, 0, 0, 0);
         al_flip_display();
     //}
-        recvMsgFromServer(&status,WAIT_FOR_IT);
+        recvMsgFromServer(escolhas,WAIT_FOR_IT);
 
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
@@ -350,7 +350,7 @@ void desenhar(){
  
     /* printa as posicoes dos jogadores */
     for(i=0;i<jogadores;i++){
-        fprintf(stderr," jogadorID: %d posicao x:%d posicao y:%d\n",i,pos[i][0],pos[i][1]);
+        fprintf(stderr," jogadorID: %d posicao x:%d posicao y:%d\n que escolheU: %d\n",i,pos[i][0],pos[i][1],escolhas[i]);
     }
     fprintf(stderr,"obs: meu id eh: %d",id);
  
@@ -619,5 +619,7 @@ void conectar() {
     }
   }while(ans!=SERVER_UP);
   recvMsgFromServer(&id,WAIT_FOR_IT);
-  fprintf(stderr,"ei, seu id eh: %d\n",id);
+  fprintf(stderr,"ei, seu id eh: %d\n",id); 
+  sendMsgToServer(&pers,1);
+  
 }
