@@ -53,6 +53,7 @@ void posicaoInicial(char pos[][2]){
 
 void aceitaConexao(){
 	int id;
+	int status=1;
 	int ID_Disponivel=0;	
 	while(ID_Disponivel<jogadores){
 		id = acceptConnection();
@@ -63,4 +64,6 @@ void aceitaConexao(){
 		sendMsgToClient(&id,sizeof(int),id);
 
 	}
+	broadcast(&status,sizeof(int));
+
 }
