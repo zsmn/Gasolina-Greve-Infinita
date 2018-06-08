@@ -16,11 +16,11 @@
 #define SPRITE_5 11 
 #define SPRITE_6 12
 #define DEAD 13
-#define jogadores 2
+#define jogadores 3
 #define mensagem struct msg_ret_t
 
 void posicaoInicial(char pos[][2]);
-char escolhas[jogadores];
+
 void aceitaConexao();
 int main() {
   char  pos[jogadores][2]; // matriz para armazenar posicoes iniciais do jogadores
@@ -53,8 +53,9 @@ void posicaoInicial(char pos[][2]){
 
 void aceitaConexao(){
 	int id;
-	int status=1;
+	int status=0;
 	int ID_Disponivel=0;	
+	broadcast(&status,sizeof(int));
 	while(ID_Disponivel<jogadores){
 		id = acceptConnection();
 		if(id != NO_CONNECTION){
@@ -64,13 +65,7 @@ void aceitaConexao(){
 		sendMsgToClient(&id,sizeof(int),id);
 
 	}
-	char count=0,aux;
-	while(count<jogadores){
-		mensagem msgjog = recvMsg(&aux);
-    		if (msgjog.status == MESSAGE_OK) {
-      			escolhas[msgjog.client_id]=aux;
-			count++;		
-    		} 	
-	}
-	broadcast(escolhas,jogadores);
+	status = 1;
+	broadcast(&status,sizeof(int));
+
 }
