@@ -7,7 +7,7 @@
 #include <stdbool.h>
 #include "client.h"
 #define jogadores 2
-#define IP "172.20.4.20"
+#define IP "172.20.4.13"
 void conectar();
 int id;
 const float tempofade = 0.3;
@@ -35,8 +35,7 @@ ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
 
 ALLEGRO_BITMAP *loading = NULL;
 
-ALLEGRO_BITMAP *player1 = NULL;
-ALLEGRO_BITMAP *player2 = NULL;
+ALLEGRO_BITMAP* player[jogadores];
  
 /* tela de seleção de personagens */
 ALLEGRO_BITMAP *personagens = NULL; // tela da seleção de personagens
@@ -114,12 +113,11 @@ al_rest(tempofade); //dica durante 3 segundos
     menu = al_load_bitmap("resources/menu.bmp");
     fadein(menu, 1);
 		 /* seta os bitmaps */
-     player1 = al_create_bitmap(20, 20);
-     al_set_target_bitmap(player1);
-     al_clear_to_color(al_map_rgb(255, 0, 0));
-     player2 = al_create_bitmap(20, 20);
-     al_set_target_bitmap(player2);
-     al_clear_to_color(al_map_rgb(255, 255, 255));
+	 for(i=0;i<jogadores;i++){
+		player[i]=al_create_bitmap(20, 20);
+		 al_set_target_bitmap(player[i]);
+		al_clear_to_color(al_map_rgb(255, 0, 0));
+	 }
     while(jogar != 0){
         al_draw_bitmap(menu, 0, 0, 0);
             while(!al_is_event_queue_empty(fila_eventos)){
@@ -227,7 +225,7 @@ al_rest(tempofade); //dica durante 3 segundos
         al_rest(0.1);
     } 
 	conectar();                   
-	loading = al_load_bitmap("resources/load.png");
+	loading = al_load_bitmap("resources/loading.jpeg");
     //while(status != 1){
 	al_draw_bitmap(loading, 0, 0, 0);
         al_flip_display();
@@ -346,9 +344,9 @@ void desenhar(){
     int i = 0;
     al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
      /* desenha os quadradinhos de cada jogador */
- 
-    al_draw_bitmap(player1, pos[0][0]*16, pos[0][1]*16, 0);
-    al_draw_bitmap(player2, pos[1][0]*16, pos[1][1]*16, 0);
+ 	for(i=0;i<jogadores;i++){
+		al_draw_bitmap(player[i], pos[i][0]*16, pos[i][1]*16, 0);	
+	}
  
     /* printa as posicoes dos jogadores */
     for(i=0;i<jogadores;i++){
