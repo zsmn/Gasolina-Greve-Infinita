@@ -623,7 +623,7 @@ void setarVida(int n){
         bvida = al_load_bitmap("resources/bvida0.png");
     }
 }
-void conectar() {
+void conectar(){
   enum conn_ret_t ans;
   do{
     ans = connectToServer(IP);      
