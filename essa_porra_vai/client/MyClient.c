@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "client.h"
-#define jogadores 3
+#define jogadores 4
 #define IP "172.20.5.16"
 void conectar();
 int id;
