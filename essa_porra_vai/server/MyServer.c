@@ -16,7 +16,7 @@
 #define SPRITE_5 11 
 #define SPRITE_6 12
 #define DEAD 13
-#define jogadores 2  
+#define jogadores 2
 #define mensagem struct msg_ret_t
 
 void posicaoInicial(char pos[][2]);
