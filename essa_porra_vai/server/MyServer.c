@@ -60,5 +60,7 @@ void aceitaConexao(){
 			fprintf(stderr,"O usuario[%d] foi conectado\n",id);
 			ID_Disponivel++;
 		}
+		sendMsgToClient(&id,sizeof(int),id);
+
 	}
 }
