@@ -16,7 +16,7 @@
 #define SPRITE_5 11 
 #define SPRITE_6 12
 #define DEAD 13
-#define jogadores 3
+#define jogadores 2
 #define mensagem struct msg_ret_t
 
 void posicaoInicial(char pos[][2]);
@@ -24,8 +24,10 @@ void posicaoInicial(char pos[][2]);
 void aceitaConexao();
 int main() {
   char  pos[jogadores][2]; // matriz para armazenar posicoes iniciais do jogadores
+	char pers[jogadores];
   char aux[2];
-  int i; // contador
+	int aux2;
+  int i, cont = 0; // contador
 	
 	
   posicaoInicial(pos); // coloca os jogadores nas posicoes iniciais
@@ -33,15 +35,26 @@ int main() {
   system("clear");
   puts("o servidor esta funcionando!!");
 	aceitaConexao(); // a conexao fica aberta para os usuarios entrarem
-  while (1){
-    mensagem msgjog = recvMsg(aux);
-    if (msgjog.status == MESSAGE_OK){
-      pos[msgjog.client_id][0]=aux[0];
-      pos[msgjog.client_id][1]=aux[1];
-      //broadcast(pos,2*sizeof(int));
-      broadcast(pos,jogadores*2*sizeof(char)); 
-    } 
-  }
+
+	while(cont < jogadores){
+		mensagem msgjog2 = recvMsg(&aux2);
+		if(msgjog2.status == MESSAGE_OK){
+			pers[msgjog2.client_id] = aux2;
+			cont++;
+		}
+		fprintf(stderr,"%i\n",cont);
+	}
+	fprintf(stderr,"sai e mandei");
+	broadcast(pers, jogadores*sizeof(char));
+
+	while (1){
+  	mensagem msgjog = recvMsg(aux);
+  	if (msgjog.status == MESSAGE_OK){
+    	pos[msgjog.client_id][0]=aux[0];
+    	pos[msgjog.client_id][1]=aux[1];
+    	broadcast(pos,jogadores*2*sizeof(char)); 
+  	}
+	}
 }
 void posicaoInicial(char pos[][2]){
    int i;
