@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include "client.h"
-#define jogadores 3
+#define jogadores 2
 #define IP "127.0.0.1"
 
 /* variaveis globais */
@@ -24,6 +24,7 @@ int frameWidth = 42;
 int frameHeight = 38;
 int curFrame = 0;
 char pos[jogadores][2];
+char persEsc[jogadores];
 
 /* armazenamento da resposta do server e uso da ampulheta */
 int status = 0;
@@ -90,7 +91,7 @@ int main(void){
     const int maxFrame = 2;
     int frameCount = 0;
     int frameDelay = 1;
-    int pers = 0;
+    char pers;
     /* variaveis usavas pra a musica */
     int timer = 0;
     int ttest = 0;
@@ -179,45 +180,47 @@ int main(void){
             if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
                 if(evento.mouse.x >= 157 && evento.mouse.x <= 339 &&
                 evento.mouse.y >= 339 && evento.mouse.y <= 432){
-                    fprintf(stderr, "PERSO1\n");
-                    pers = 1;
+                    //printf(stderr, "PERSO1\n");
+                    pers = '1';
                     selecao = 0;
                 }
                 if(evento.mouse.x >= 422 && evento.mouse.x <= 519 &&
                 evento.mouse.y >= 341 && evento.mouse.y <= 434){
-                    fprintf(stderr, "PERSO2\n");
+                    //fprintf(stderr, "PERSO2\n");
                     selecao = 0;
-                    pers = 2;
+                    pers = '2';
                 }
                 if(evento.mouse.x >= 709 && evento.mouse.x <= 807 &&
                 evento.mouse.y >= 342 && evento.mouse.y <= 435){
-                    fprintf(stderr, "PERSO3\n");
+                    //fprintf(stderr, "PERSO3\n");
                     selecao = 0;
-                    pers = 3;
+                    pers = '3';
                 }
                 if(evento.mouse.x >= 151 && evento.mouse.x <= 246 &&
                 evento.mouse.y >= 551 && evento.mouse.y <= 644){
-                    fprintf(stderr, "PERSO4\n");
+                    //fprintf(stderr, "PERSO4\n");
                     selecao = 0;
-                    pers = 4;
+                    pers = '4';
                 }
                 if(evento.mouse.x >= 420 && evento.mouse.x <= 515 &&
                 evento.mouse.y >= 552 && evento.mouse.y <= 645){
-                    fprintf(stderr, "PERSO5\n");
+                    //fprintf(stderr, "PERSO5\n");
                     selecao = 0;
-                    pers = 5;
+                    pers = '5';
                 }
                 if(evento.mouse.x >= 705 && evento.mouse.x <= 801 &&
                 evento.mouse.y >= 552 && evento.mouse.y <= 645){
-                    fprintf(stderr, "PERSO6\n");
+                    //fprintf(stderr, "PERSO6\n");
                     selecao = 0;
-                    pers = 6;
+                    pers = '6';
                 }
             }
         }
         al_rest(0.1);
     } 
+
 	conectar();                   
+    sendMsgToServer(&pers, sizeof(char));
 	loading = al_load_bitmap("resources/loading.png");
 
     while(status != 1){
@@ -230,9 +233,12 @@ int main(void){
     al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, (posx) * 16, (posy) * 16,21,19, 0);//desenha o personagem
     setarVida(vida);
     setAudio("sounds/whenyouwere.ogg");//começa a melhor musica possivel
+
+    recvMsgFromServer(persEsc, WAIT_FOR_IT);
+
     while (!sair){//entra no loop do jogo
-         recvMsgFromServer(pos,DONT_WAIT);
-         desenhar();
+        recvMsgFromServer(pos,DONT_WAIT);
+        desenhar();
         while (!al_is_event_queue_empty(fila_eventos)){//se  acontecer algo
             ALLEGRO_EVENT evento;   //declara variavel eveno
             al_wait_for_event(fila_eventos, &evento);//esse evento fica na fila
@@ -241,7 +247,6 @@ int main(void){
                 timer++;
                 if(timer == 600){
                     ttest++;
-                    fprintf(stderr, "%i\n", ttest);
                     timer = 0;
                     if(ttest == tmpmusic[musat%5]){
                         ttest = 0;
@@ -368,10 +373,12 @@ void desenhar(){
 	}
  
     /* printa as posicoes dos jogadores */
+    /*
     for(i=0;i<jogadores;i++){
-        fprintf(stderr," jogadorID: %d posicao x:%d posicao y:%d\n",i,pos[i][0],pos[i][1]);
+        fprintf(stderr," jogadorID: %d posicao x:%d posicao y:%d\n que ta com o personagem %c",i,pos[i][0],pos[i][1],persEsc[i]);
     }
-    fprintf(stderr,"obs: meu id eh: %d",id);
+    */
+    //fprintf(stderr,"obs: meu id eh: %d",id);
  
     al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
     setarVida(vida);
@@ -595,9 +602,9 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
                 }  
             }
             else if(tecla == 'd'){
-                printf("ENTREI SDJOIASJ\n");
+                //printf("ENTREI SDJOIASJ\n");
                 if(matrizOcupada[posicaoY][posicaoX+1]=='0'){
-                    printf("AQUI TBM\n");
+                    //printf("AQUI TBM\n");
                     matrizOcupada[posicaoY][posicaoX]='0';
                     matrizOcupada[posicaoY][posicaoX+1]='1';
                     posicaoX++;
