@@ -217,7 +217,6 @@ void fadein(ALLEGRO_BITMAP *imagem, int velocidade){
 }
 bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     al_init_image_addon();
-   
     if (!al_init()){
         fprintf(stderr, "Falha ao inicializar Allegro.\n");
         return false;
@@ -246,8 +245,7 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     if (!janela){
         fprintf(stderr, "Falha ao criar a janela.\n");
         return false;
-    }
-   
+    } 
     // inicialização e configuração do mouse
     if(!al_install_mouse()){
         fprintf(stderr, "Falha ao inicializar o mouse");
@@ -260,7 +258,6 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
         al_destroy_display(janela);
         return -1;
     }
-   
     fila_eventos = al_create_event_queue();
     if (!fila_eventos){
         fprintf(stderr, "Falha ao criar fila de eventos.\n");
@@ -402,11 +399,14 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
 void setarVida(int n){
     if(n == 3){
         bvida = al_load_bitmap("resources/bvida3.png");
-    }else if(n == 2){
+    }
+	else if(n == 2){
         bvida = al_load_bitmap("resources/bvida2.png");
-    }else if(n == 1){
+    }
+	else if(n == 1){
         bvida = al_load_bitmap("resources/bvida1.png");
-    }else{
+    }
+	else{
         bvida = al_load_bitmap("resources/bvida0.png");
     }
     al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
@@ -415,32 +415,35 @@ void setarVida(int n){
 }
 void conectar(){
     enum conn_ret_t ans;
-        do{
-            ans = connectToServer(IP);      
-            if (ans == SERVER_DOWN) {
-                puts("Servidor esta baixo :(!");
-            }else if (ans == SERVER_FULL) {
-                puts("servidor cheio!");
-            }else if (ans == SERVER_CLOSED) {
-                puts("servidor fechado para novas conexoes");
-            }else if(ans==SERVER_TIMEOUT) {
-                puts("servidor n respondeu");
-            }
-        } while(ans!=SERVER_UP);
+	do{
+    	ans = connectToServer(IP);      
+    	if (ans == SERVER_DOWN) {
+    		puts("Servidor esta baixo :(!");
+    	}
+		else if (ans == SERVER_FULL) {
+        	puts("servidor cheio!");
+        }
+		else if (ans == SERVER_CLOSED) {
+        	puts("servidor fechado para novas conexoes");
+		}
+		else if(ans==SERVER_TIMEOUT) {
+        	puts("servidor n respondeu");
+        }
+    } while(ans!=SERVER_UP);
     recvMsgFromServer(&id,WAIT_FOR_IT);
     fprintf(stderr,"ei, seu id eh: %d\n",id);
 }
 void inicializaMenu(){
 	while(jogar != 0){
-        al_draw_bitmap(menu, 0, 0, 0);
+    	al_draw_bitmap(menu, 0, 0, 0);
         while(!al_is_event_queue_empty(fila_eventos)){
 			ALLEGRO_EVENT evento;
 			al_wait_for_event(fila_eventos, &evento);
             if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
-				/* botao de inicio */
+		    	/* botao de inicio */
                 if(evento.mouse.x >= 112 && evento.mouse.x <= 362 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-                    	jogar = 0;
-                        selecao = 1;
+                	jogar = 0;
+                    selecao = 1;
 				}
                 /* botao de opcoes */
 				if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
