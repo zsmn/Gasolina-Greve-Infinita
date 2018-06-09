@@ -18,43 +18,31 @@
 #define DEAD 13
 #define jogadores 2
 #define mensagem struct msg_ret_t
-
+char pos[jogadores][2]; // matriz para armazenar posicoes iniciais do jogadores
+char pers[jogadores];
+char aux[2];
+int aux2;
+int i, cont = 0; // contador	
+void pegaPers();
 void posicaoInicial(char pos[][2]);
-
 void aceitaConexao();
+void pegaPers();
+void fazMov();
 int main() {
-  char  pos[jogadores][2]; // matriz para armazenar posicoes iniciais do jogadores
+	char pos[jogadores][2]; // matriz para armazenar posicoes iniciais do jogadores
 	char pers[jogadores];
-  char aux[2];
+	char aux[2];
 	int aux2;
-  int i, cont = 0; // contador
-	
-	
-  posicaoInicial(pos); // coloca os jogadores nas posicoes iniciais
-  serverInit(jogadores); // inicia o server
-  system("clear");
-  puts("o servidor esta funcionando!!");
+	int i, cont = 0; // contador	
+	posicaoInicial(pos); // coloca os jogadores nas posicoes iniciais
+	serverInit(jogadores); // inicia o server
+	system("clear");
+	puts("o servidor esta funcionando!!");
 	aceitaConexao(); // a conexao fica aberta para os usuarios entrarem
-
-	while(cont < jogadores){
-		mensagem msgjog2 = recvMsg(&aux2);
-		if(msgjog2.status == MESSAGE_OK){
-			pers[msgjog2.client_id] = aux2;
-			cont++;
-		}
-		fprintf(stderr,"%i\n",cont);
-	}
 	fprintf(stderr,"sai e mandei");
+	pegaPers();
 	broadcast(pers, jogadores*sizeof(char));
-
-	while (1){
-  	mensagem msgjog = recvMsg(aux);
-  	if (msgjog.status == MESSAGE_OK){
-    	pos[msgjog.client_id][0]=aux[0];
-    	pos[msgjog.client_id][1]=aux[1];
-    	broadcast(pos,jogadores*2*sizeof(char)); 
-  	}
-	}
+	fazMov();
 }
 void posicaoInicial(char pos[][2]){
    int i;
@@ -76,9 +64,27 @@ void aceitaConexao(){
 			ID_Disponivel++;
 		}
 		sendMsgToClient(&id,sizeof(int),id);
-
 	}
 	status = 1;
 	broadcast(&status,sizeof(int));
-
+}
+void pegaPers(){
+	while(cont < jogadores){
+		mensagem msgjog2 = recvMsg(&aux2);
+		if(msgjog2.status == MESSAGE_OK){
+			pers[msgjog2.client_id] = aux2;
+			cont++;
+		}
+		fprintf(stderr,"%i\n",cont);
+	}
+}
+void fazMov(){
+	while (1){
+  		mensagem msgjog = recvMsg(aux);
+  		if (msgjog.status == MESSAGE_OK){
+    		pos[msgjog.client_id][0]=aux[0];
+    		pos[msgjog.client_id][1]=aux[1];
+    		broadcast(pos,jogadores*2*sizeof(char)); 
+  		}
+	}
 }
