@@ -66,6 +66,7 @@ void setarVida(int n);
 bool inicializar();  //função q inicializa
 void preencheMatriz();// cria matriz
 void desenhar();
+void drawHourGlass();
 int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//anda na matriz
 int main(void){
     system("clear");
