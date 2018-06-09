@@ -5,7 +5,6 @@
 #include <allegro5/allegro_primitives.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include<stdlib.h>
 #include "client.h"
 #define jogadores 2
 #define IP "127.0.0.1"
@@ -91,6 +90,7 @@ void selectPersonagem();
 void jogoInit();
 void destroy();
 int main(void){
+    system("clear");
     /* declaracao de variaveis */
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
         return -1;
@@ -98,29 +98,30 @@ int main(void){
     preencheMatriz(matrizOcupada);
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
-	efeitoFade(fundo);
+    efeitoFade(fundo);
     grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
     efeitoFade(grupo);
     menu = al_load_bitmap("resources/menu.bmp");
     fadein(menu, 1);
-	/* seta os bitmaps */
-	for(i=0;i<jogadores;i++){
-		player[i]=al_create_bitmap(20, 20);
-		al_set_target_bitmap(player[i]);
-		al_clear_to_color(al_map_rgb(255, 0, 0));
-	}
-	inicializaMenu();
-    selectPersonagem();
-	conectar();                   
-    sendMsgToServer(&pers, sizeof(char));
-	loading = al_load_bitmap("resources/loading.png");
-    while(status != 1){
-		drawHourGlass();
+    /* seta os bitmaps */
+    for(i=0;i<jogadores;i++){
+        player[i]=al_create_bitmap(20, 20);
+        al_set_target_bitmap(player[i]);
+        al_clear_to_color(al_map_rgb(255, 0, 0));
     }
-	jogoInit();
+    inicializaMenu();
+    selectPersonagem();
+    conectar();                   
+    sendMsgToServer(&pers, sizeof(char));
+    loading = al_load_bitmap("resources/loading.png");
+    while(status != 1){
+        drawHourGlass();
+    }
+    jogoInit();
     destroy();
     return 0;
 }
+
 void desenharSelecao(){
     al_draw_bitmap(personagens, 0, 0, 0);       
     al_convert_mask_to_alpha(perso1,al_map_rgb(255,0,255));
@@ -144,28 +145,28 @@ void efeitoFade(ALLEGRO_BITMAP *bitmap){
     fadeout(1);
 }
 void drawHourGlass(){
-	int i;
-	recvMsgFromServer(&status,DONT_WAIT);
-	loading = al_load_bitmap("resources/loading.png");
-	al_draw_bitmap(loading, 0, 0, 0);
-	for(i = 0; i < 240 && status != 1; i++){
-		recvMsgFromServer(&status,DONT_WAIT);
-		sprintf(amp, "resources/ampulheta/output-%d.png", i);
-		al_clear_to_color(al_map_rgb(0, 0, 0));
-		ampulheta = al_load_bitmap(amp);
-		al_draw_bitmap(loading, 0, 0, 0);
-		al_draw_scaled_bitmap(ampulheta, 0, 0, 285, 215, 300, 395, 385, 315, 0);
-		al_rest(0.04);
-		al_flip_display();
-	}
+    int i;
+    recvMsgFromServer(&status,DONT_WAIT);
+    loading = al_load_bitmap("resources/loading.png");
+    al_draw_bitmap(loading, 0, 0, 0);
+    for(i = 0; i < 240 && status != 1; i++){
+        recvMsgFromServer(&status,DONT_WAIT);
+        sprintf(amp, "resources/ampulheta/output-%d.png", i);
+        al_clear_to_color(al_map_rgb(0, 0, 0));
+        ampulheta = al_load_bitmap(amp);
+        al_draw_bitmap(loading, 0, 0, 0);
+        al_draw_scaled_bitmap(ampulheta, 0, 0, 285, 215, 300, 395, 385, 315, 0);
+        al_rest(0.04);
+        al_flip_display();
+    }
 }
 void desenhar(){
     int i = 0;
     al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
      /* desenha os quadradinhos de cada jogador */
- 	for(i=0;i<jogadores;i++){
-		al_draw_bitmap(player[i], pos[i][0]*16, pos[i][1]*16, 0);	
-	}
+    for(i=0;i<jogadores;i++){
+        al_draw_bitmap(player[i], pos[i][0]*16, pos[i][1]*16, 0);   
+    }
     /* printa as posicoes dos jogadores */
     /*
     for(i=0;i<jogadores;i++){
@@ -185,7 +186,12 @@ void fadeout(int velocidade){
     al_draw_bitmap(al_get_backbuffer(janela), 0, 0, 0);
     al_set_target_bitmap(al_get_backbuffer(janela));
     if (velocidade <= 0){
-        velocidade = 1;
+        if(velocidade<0.0001){
+            return 0;
+        }
+        else{
+            velocidade = 1;
+        }
     }
     else if (velocidade > 15){
         velocidade = 15;
@@ -201,7 +207,12 @@ void fadeout(int velocidade){
 } 
 void fadein(ALLEGRO_BITMAP *imagem, int velocidade){
     if (velocidade < 0){
-        velocidade = 1;
+        if(velocidade<0.0001){
+            return 0;
+        }
+        else{
+            velocidade = 1;
+        }
     }
     else if (velocidade > 15){
         velocidade = 15;
@@ -284,7 +295,7 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     al_set_target_bitmap(al_get_backbuffer(janela));
     fundo = al_load_bitmap("resources/cin.jpeg");
     if(fundo==NULL){
-		fprintf(stderr,"essa porra deu bug");
+    fprintf(stderr,"essa porra deu bug");
     }
     al_register_event_source(fila_eventos, al_get_keyboard_event_source());
     al_register_event_source(fila_eventos, al_get_display_event_source(janela));
@@ -367,7 +378,7 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
                 return posicaoX;
             }
         }
-		else{
+        else{
             if(tecla == 's'){
                 if(matrizOcupada[posicaoY+1][posicaoX]=='0'){
                     matrizOcupada[posicaoY][posicaoX]='0';
@@ -392,20 +403,20 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
                     return posicaoX;
                 }
             }
-		}
-	}
+        }
+    }
 }
 void setarVida(int n){
     if(n == 3){
         bvida = al_load_bitmap("resources/bvida3.png");
     }
-	else if(n == 2){
+    else if(n == 2){
         bvida = al_load_bitmap("resources/bvida2.png");
     }
-	else if(n == 1){
+    else if(n == 1){
         bvida = al_load_bitmap("resources/bvida1.png");
     }
-	else{
+    else{
         bvida = al_load_bitmap("resources/bvida0.png");
     }
     al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
@@ -414,57 +425,78 @@ void setarVida(int n){
 }
 void conectar(){
     enum conn_ret_t ans;
-	do{
-    	ans = connectToServer(IP);      
-    	if (ans == SERVER_DOWN) {
-    		puts("Servidor esta baixo :(!");
-    	}
-		else if (ans == SERVER_FULL) {
-        	puts("servidor cheio!");
+    do{
+        ans = connectToServer(IP);      
+        if (ans == SERVER_DOWN) {
+            puts("Servidor esta baixo :(!");
         }
-		else if (ans == SERVER_CLOSED) {
-        	puts("servidor fechado para novas conexoes");
-		}
-		else if(ans==SERVER_TIMEOUT) {
-        	puts("servidor n respondeu");
+        else if (ans == SERVER_FULL) {
+            puts("servidor cheio!");
         }
-    }while(ans!=SERVER_UP);
+        else if (ans == SERVER_CLOSED) {
+            puts("servidor fechado para novas conexoes");
+        }
+        else if(ans==SERVER_TIMEOUT) {
+            puts("servidor n respondeu");
+        }
+    } while(ans!=SERVER_UP);
     recvMsgFromServer(&id,WAIT_FOR_IT);
     fprintf(stderr,"ei, seu id eh: %d\n",id);
 }
 void inicializaMenu(){
-	while(jogar != 0){
-    	al_draw_bitmap(menu, 0, 0, 0);
-		while(!al_is_event_queue_empty(fila_eventos)){
-			ALLEGRO_EVENT evento;
-			al_wait_for_event(fila_eventos, &evento);
-        	if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
-		    	/* botao de inicio */
-            	if(evento.mouse.x >= 112 && evento.mouse.x <= 362 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-                	jogar = 0;
+    while(jogar != 0){
+        al_draw_bitmap(menu, 0, 0, 0);
+        fadeout(0.000001);
+        while(!al_is_event_queue_empty(fila_eventos)){
+            ALLEGRO_EVENT evento;
+            al_wait_for_event(fila_eventos, &evento);
+            if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
+                /* botao de inicio */
+                if(evento.mouse.x >= 112 && evento.mouse.x <= 362 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                    menu = al_load_bitmap("resources/jogar_up.bmp");
+                    al_draw_bitmap(menu,0,0,0);
+                    al_flip_display();
+                    al_rest(0.5);
+                    menu = al_load_bitmap("resources/menu.bmp");
+                    al_draw_bitmap(menu,0,0,0);
+                    jogar = 0;
                     selecao = 1;
-				}
+                }
                 /* botao de opcoes */
-				if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-					jogar = 0;
+                if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                    menu = al_load_bitmap("resources/opcoes_up.bmp");
+                    al_draw_bitmap(menu,0,0,0);
+                    al_flip_display();
+                    al_rest(0.5);
+                    menu = al_load_bitmap("resources/menu.bmp");
+                    al_draw_bitmap(menu,0,0,0);
+                    jogar = 0;
                     selecao = 0;
-				}
+                }
                 /* botao de sair */
                 if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-                	al_destroy_audio_stream(musica);
+                    menu = al_load_bitmap("resources/sair_up.bmp");
+                    al_draw_bitmap(menu,0,0,0);
+                    al_flip_display();
+                    al_rest(0.5);
+                    menu = al_load_bitmap("resources/menu.bmp");
+                    al_draw_bitmap(menu,0,0,0);
+                    al_flip_display();
+                    al_rest(0.5);
+                    al_destroy_audio_stream(musica);
                     al_destroy_event_queue(fila_eventos);
                     al_destroy_display(janela); //tudo termina
-                    exit(1);
-				}
-			}
-		}
+                    return 0;
+                }
+            }
+        }
         al_rest(0.1);
-	}
-	fadeout(1);
+    } 
+    fadeout(1);
 }
 void selectPersonagem(){
-	personagens = al_load_bitmap("resources/perso.png");
-	al_draw_bitmap(personagens, 0, 0, 0);
+    personagens = al_load_bitmap("resources/perso.png");
+    al_draw_bitmap(personagens, 0, 0, 0);
     fadein(personagens, 1);
     perso1 = al_load_bitmap("resources/perso1.png");
     perso2 = al_load_bitmap("resources/perso2.png");
@@ -472,17 +504,17 @@ void selectPersonagem(){
     perso4 = al_load_bitmap("resources/perso4.png");
     perso5 = al_load_bitmap("resources/perso5.png");
     perso6 = al_load_bitmap("resources/perso6.png");
-	while(selecao != 0){
-    	al_draw_bitmap(personagens, 0, 0, 0);
+     while(selecao != 0){
+        al_draw_bitmap(personagens, 0, 0, 0);
         desenharSelecao();
         while(!al_is_event_queue_empty(fila_eventos)){
             ALLEGRO_EVENT evento;
             al_wait_for_event(fila_eventos, &evento);        
             if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
                 if(evento.mouse.x >= 157 && evento.mouse.x <= 339 &&evento.mouse.y >= 339 && evento.mouse.y <= 432){
-                	//printf(stderr, "PERSO1\n");
-                	pers = '1';
-                	selecao = 0;
+                    //printf(stderr, "PERSO1\n");
+                    pers = '1';
+                    selecao = 0;
                 }
                 if(evento.mouse.x >= 422 && evento.mouse.x <= 519 &&evento.mouse.y >= 341 && evento.mouse.y <= 434){
                     //fprintf(stderr, "PERSO2\n");
@@ -512,10 +544,10 @@ void selectPersonagem(){
             }
         }
         al_rest(0.1);
-    }
+    } 
 }
 void jogoInit(){
-	imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
+    imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
     al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
     al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, (posx) * 16, (posy) * 16,21,19, 0);//desenha o personagem
@@ -541,7 +573,7 @@ void jogoInit(){
                 }
             }
             if (evento.type == ALLEGRO_EVENT_KEY_DOWN){
-				if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
+                if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
                     tecl='w';
                     posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
                     pp = 1;
@@ -580,17 +612,17 @@ void jogoInit(){
             }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai
                 sair = true;
-                exit(1);
+                return 0;
             }
             if(al_is_event_queue_empty(fila_eventos)) {
                 if(tecl == 's' || tecl == 'w' || tecl == 'a' || tecl == 'd'){
                     for(auxiliar = 0; auxiliar < 1; auxiliar++){//alterado de 5 pra 1
-                    	if(frameCount++ >= frameDelay){
-                    	    if(curFrame++ >= maxFrame){
-                    	        curFrame = 0;
-                    	    }
-                    	    frameCount = 0;
-                    	}
+                        if(frameCount++ >= frameDelay){
+                            if(curFrame++ >= maxFrame){
+                                curFrame = 0;
+                            }
+                            frameCount = 0;
+                        }
                     }
                     tecl = '0'; // evita que entre no loop dnv
                 }
@@ -599,7 +631,7 @@ void jogoInit(){
     }
 }
 void destroy(){
-	al_destroy_audio_stream(musica);
+    al_destroy_audio_stream(musica);
     al_destroy_event_queue(fila_eventos);
     al_destroy_display(janela); //tudo termina
 }
