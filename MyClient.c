@@ -24,7 +24,7 @@ int jogar = 1;
 int selecao;
 int dir_x = passo, dir_y = passo;
 char matrizOcupada[40][61];
-int opcoesat;
+int opcoesat = 0;
 /* variaveis da animacao do personagem */
 const int maxFrame = 2;
 int frameCount = 0;
@@ -51,7 +51,7 @@ char persEsc[jogadores];
 int status = 0;
 char amp[100];
 /* armazena o ip */
-char str[16] = "1";
+char str[16];
 /* criação do display e de alguns bitmaps */
 ALLEGRO_DISPLAY *janela = NULL; //ponteiro para a janela
 ALLEGRO_AUDIO_STREAM *musica = NULL; //ponteiro para a musica
@@ -101,6 +101,7 @@ void destroy();
 void manipular_entrada(ALLEGRO_EVENT evento);
 
 int main(void){
+    strcpy(str, "127.0.0.1");
 	system("clear");
     /* declaracao de variaveis */
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
@@ -429,7 +430,7 @@ void setarVida(int n){
 void conectar(){
     enum conn_ret_t ans;
 	do{
-    	ans = connectToServer(IP);      
+    	ans = connectToServer(str);      
     	if (ans == SERVER_DOWN) {
     		puts("Servidor esta baixo :(!");
     	}
@@ -446,43 +447,50 @@ void conectar(){
     recvMsgFromServer(&id,WAIT_FOR_IT);
     fprintf(stderr,"ei, seu id eh: %d\n",id);
 }
+
 void inicializaMenu(){
     options = al_load_bitmap("resources/ip.png");
-	while(jogar != 0){
-    	al_draw_bitmap(menu, 0, 0, 0);
+	while(jogar != 0 || opcoesat == 1){
+        if(jogar == 1) al_draw_bitmap(menu, 0, 0, 0);
+    	
         while(!al_is_event_queue_empty(fila_eventos)){
 			ALLEGRO_EVENT evento;
 			al_wait_for_event(fila_eventos, &evento);
-            if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
-		    	/* botao de inicio */
-                if(evento.mouse.x >= 112 && evento.mouse.x <= 362 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-                	jogar = 0;
-                    selecao = 1;
-				}
-                /* botao de opcoes */
-				if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-					jogar = 0;
-                    selecao = 0;
-                    opcoesat = 1;
-                    al_draw_bitmap(options, 0, 0, 0);
-				}
-                /* botao de sair */
-                if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-                	al_destroy_audio_stream(musica);
-                    al_destroy_event_queue(fila_eventos);
-                    al_destroy_display(janela); //tudo termina
-				}
-			}
-            if(opcoesat == 1){
-                writeIP(evento, str);
-                al_draw_bitmap(options, 0, 0, 0);
-                if (strlen(str) > 0){
-                    al_draw_text(fonte, al_map_rgb(255, 255, 255), 470, 450, ALLEGRO_ALIGN_CENTRE, str);
+            if(jogar != 0){
+                if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
+                    /* botao de inicio */
+                    if(evento.mouse.x >= 112 && evento.mouse.x <= 362 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                        jogar = 0;
+                        selecao = 1;
+                    }
+                    /* botao de opcoes */
+                    if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                        jogar = 0;
+                        selecao = 0;
+                        opcoesat = 1;
+                        al_draw_bitmap(options, 0, 0, 0);
+                        if (strlen(str) > 0){
+                            al_draw_text(fonte, al_map_rgb(255, 255, 255), 470, 450, ALLEGRO_ALIGN_CENTRE, str);
+                        }
+                    }
+                    /* botao de sair */
+                    if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                        al_destroy_audio_stream(musica);
+                        al_destroy_event_queue(fila_eventos);
+                        al_destroy_display(janela); //tudo termina
+                    }
                 }
-                al_flip_display();
-                al_rest(0.01);
+            }else{
+                if(opcoesat == 1 && evento.type == ALLEGRO_EVENT_KEY_CHAR){
+                    writeIP(evento, str);
+                    al_draw_bitmap(options, 0, 0, 0);
+                    if (strlen(str) > 0){
+                        al_draw_text(fonte, al_map_rgb(255, 255, 255), 470, 450, ALLEGRO_ALIGN_CENTRE, str);
+                    }
+                }
             }
 		}
+        al_flip_display();
         al_rest(0.1);
 	} 
     fadeout(1);
@@ -495,7 +503,6 @@ void writeIP(ALLEGRO_EVENT event, char str[]){
 			if ((event.keyboard.unichar >= '0' && event.keyboard.unichar <= '9') || event.keyboard.unichar == '.'){
 				strcat(str, temp);
 			}
-            fprintf(stderr, "%c\n", event.keyboard.unichar);
 		}
 	}
 	if(strlen(str)){
@@ -503,6 +510,10 @@ void writeIP(ALLEGRO_EVENT event, char str[]){
 			str[strlen(str)-1] = '\0';
 		}
 	}
+    if(event.keyboard.keycode == ALLEGRO_KEY_ENTER){
+        opcoesat = 0;
+        jogar = 1;
+    }
 }
 
 void selectPersonagem(){
