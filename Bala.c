@@ -252,7 +252,7 @@ int main(void){
                         clicky = evento.mouse.y/16;
                         m = tiros(evento.mouse.x,evento.mouse.y,posx*16,posy*16,testando,bala);
                         perm=1;
-			al_play_sample(som_tiro, 2.0, 0.0,2.0,ALLEGRO_PLAYMODE_ONCE,NULL); 
+			al_play_sample(som_tiro, 2.0, 0.0, 3.0,ALLEGRO_PLAYMODE_ONCE,NULL); 
                     }
                 } 
                  if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //agora ele checa se tem colisao, para cima
