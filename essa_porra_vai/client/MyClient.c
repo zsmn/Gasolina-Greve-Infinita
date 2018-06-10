@@ -11,7 +11,7 @@
 #define jogadores 2
 #define passo 1
 /* variaveis globais */
-const float tempofade = 0.3;
+const float tempofade = 0.1;
 const int LARGURA_TELA = 960;
 const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas //declaro quantos passos ando
 bool sair = false;
