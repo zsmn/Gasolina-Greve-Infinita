@@ -246,13 +246,13 @@ int main(void){
                         }
                     }
                 }
-                if(perm==0){
-                    if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && perm==0){
-                        clickx = evento.mouse.x/16;
-                        clicky = evento.mouse.y/16;
-                        m = tiros(evento.mouse.x,evento.mouse.y,posx*16,posy*16,testando,bala);
-                        perm=1;
-			al_play_sample(som_tiro, 2.0, 0.0, 3.0,ALLEGRO_PLAYMODE_ONCE,NULL); 
+                if(perm==0){//Se essa variável valer 0, significa que nenhum disparo foi efetuado
+                    if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP && perm==0){//Se houver clique quando nao há disparo de determinado player
+                        clickx = evento.mouse.x/16;//Pega a abscissa do clique em pixels e divide por 16 para poder ser colocada como índice da matriz do mapa posteriormente
+                        clicky = evento.mouse.y/16;//Pega a ordenada do clique em pixels e divide por 16 para poder ser colocada como índice da matriz do mapa posteriormente
+                        m = tiros(evento.mouse.x,evento.mouse.y,posx*16,posy*16,testando,bala);//a função tiro retorna o coeficiente angular da reta que define a trajetória do tiro
+                        perm=1;//Se essa variável valer 1, significa que um disparo foi efetuado
+			al_play_sample(som_tiro, 2.0, 0.0,3.0,ALLEGRO_PLAYMODE_ONCE,NULL); //Quando um disparo é efetuado, o som de disparo é reproduzido
                     }
                 } 
                  if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //agora ele checa se tem colisao, para cima
@@ -304,106 +304,93 @@ int main(void){
                     }
                     // como usar:
                     // al_draw_bitmap_region(*BITMAP, pontolarguraDaImagemOriginal, pontoAlturaDaImagemOriginal, LarguraDoFrameQueVcQuerPegar, AlturaDoFrameQueVcQuerPegar, xquevainascer, yquevainascer, 0);
-                        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-                        al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
-                        setarVida(vida);
-                        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
-                        al_draw_bitmap(bvida, 0, 0, 0);
-                        al_flip_display();
+                        al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);//Desenha o mapa
+                        al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa(o boneco tava com um corpinho e um cabeção), há controle de pixels que é desenhado
+                        setarVida(vida);//essa função recebe um inteiro que dirá o número de corações(vidas) o personagem tem
+                        al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os corações transparente
+                        al_draw_bitmap(bvida, 0, 0, 0);//desenhando os corações(vidas) na tela
+                        al_flip_display();//atualizando a tela
                         al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
-			if(perm==1){
+			if(perm==1){//se houve disparo do personagem(essa condicional tá dentro da condicional que verifica se "WASD" foi pressionado)
                    
                     if(bala[testando][i][0]!=2){
-                        if(matrizOcupada[(bala[testando][i+1][1])/16][(bala[testando][i+1][0])/16]=='1' && i>30){
-                            perm=0;
-                            i=0;
-                            al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
-                            setarVida(vida);
-                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
-                            al_draw_bitmap(bvida, 0, 0, 0);
-                            al_flip_display();
-                            al_clear_to_color(al_map_rgb(0, 0, 0));
-                        }else{
+                        if(matrizOcupada[(bala[testando][i+1][1])/16][(bala[testando][i+1][0])/16]=='1' && i>30){//Impede que a bala atravesse pŕedio e casas
+                            perm=0;//torna "perm" 0 novamente pra indicar que o jogador poderá efetuar outro disparo, já que o disparo anterior foi "dissipado" -> (esse jogo só permite que uma bala por jogador fique ativa)
+                            i=0;//a trajetória da bala fica armazenada na forma de duplas ordenadas na matriz bala, o "i" serve pra passar em ordem pelas coordenadas guardadas na matriz bala
+                            al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);//desenhando o mapa
+                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa(o boneco tava com um corpinho e um cabeção), há controle de pixels que é desenhado
+                            setarVida(vida);//essa função recebe um inteiro que dirá o número de corações(vidas) o personagem tem
+                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os corações transparente
+                            al_draw_bitmap(bvida, 0, 0, 0);//desenhando os corações(vidas) na tela
+                            al_flip_display();//atualizando a tela
+                            al_clear_to_color(al_map_rgb(0, 0, 0));//evita restos de pixels
+                        }else{//Se não há obstáculo, a bala poderá ser desenhadada
                     
-                            tiro = al_load_bitmap("resources/sprite do tiro.bmp");
-                            al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
-                            setarVida(vida);
-                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
-                            al_convert_mask_to_alpha(tiro,al_map_rgb(255,0,255));
-                            al_draw_scaled_bitmap(tiro, 19 , 18, 19, 18, ((bala[testando][i][0])), ((bala[testando][i][1])),12,11.3, 0);
-                            al_draw_bitmap(bvida, 0, 0, 0);
-                            al_flip_display();
-                            al_clear_to_color(al_map_rgb(0, 0, 0));
-                            if(m<1.73 && m>-1.73){
-                                
-                                i=i+10;
-                            }else{
-                                
-                                i=i+10;
-                            }
-
+                            tiro = al_load_bitmap("resources/sprite do tiro.bmp");//carregando a imagem que contém a bala
+                            al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);//desenhando o mapa
+                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa(o boneco tava com um corpinho e um cabeção), há controle de pixels que é desenhado
+                            setarVida(vida);//essa função recebe um inteiro que dirá o número de corações(vidas) o personagem tem
+                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os corações transparente
+                            al_convert_mask_to_alpha(tiro,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os tiros transparente
+                            al_draw_scaled_bitmap(tiro, 19 , 18, 19, 18, ((bala[testando][i][0])), ((bala[testando][i][1])),12,11.3, 0);//desenha a imagem com 12 x 11.3 pixels para a bala ficar menor que o personagem
+                            al_draw_bitmap(bvida, 0, 0, 0);//desenhando os corações(vidas) na tela
+                            al_flip_display();//atualizando a tela
+                            al_clear_to_color(al_map_rgb(0, 0, 0));//evita restos de pixels  
+                            i=i+10;//vai somando 10 para a a bala não ficar muito lenta(pega de 10 em 10 duplas ordenadas)     
                         }
-                        }else{
-                            perm=0;
-                            i=0;
-                             al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
-                            setarVida(vida);
-                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
-                            al_draw_bitmap(bvida, 0, 0, 0);
-                            al_flip_display();
-                            al_clear_to_color(al_map_rgb(0, 0, 0));
+                        }else{//se bala[testando][i][0]==2, significa que não há mais duplas ordenadas referentes a trajetória, então a bala deverá ser "dissipada", ou seja, não será mais desenhada
+                            perm=0;//em consequência do dissipamento da bala, "perm" volta a valer 0 para o jogador poder voltar a disparar 
+                            i=0;//volta para primeira dupla ordenada, pois ela que deverá ser usada primeiramente quando um novo disparo for efetuado
+                             al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);//desenhando o mapa
+                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa(o boneco tava com um corpinho e um cabeção), há controle de pixels que é desenhado
+                            setarVida(vida);//essa função recebe um inteiro que dirá o número de corações(vidas) o personagem tem
+                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os corações transparente
+                            al_draw_bitmap(bvida, 0, 0, 0);//desenhando os corações(vidas) na tela
+                            al_flip_display();//atualizando a tela
+                            al_clear_to_color(al_map_rgb(0, 0, 0));//evita restos de pixels
                         }
                 }
                     }
                     tecl = '0'; // evita que entre no loop dnv
                 }
-		if(perm==1){
-                    
+		//o "if(perm==1)" é repetido pois a bala se movimenta independentemente do jogador ter se movimentado
+		if(perm==1){//se houve disparo do personagem(essa condicional tá fora da condicional que verifica se "WASD" foi pressionado)
+                   
                     if(bala[testando][i][0]!=2){
-                        if(matrizOcupada[(bala[testando][i+1][1])/16][(bala[testando][i+1][0])/16]=='1' && i>30){
-                            perm=0;
-                            i=0;
-                            al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
-                            setarVida(vida);
-                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
-                            al_draw_bitmap(bvida, 0, 0, 0);
-                            al_flip_display();
-                            al_clear_to_color(al_map_rgb(0, 0, 0));
-                        }else{
+                        if(matrizOcupada[(bala[testando][i+1][1])/16][(bala[testando][i+1][0])/16]=='1' && i>30){//Impede que a bala atravesse pŕedio e casas
+                            perm=0;//torna "perm" 0 novamente pra indicar que o jogador poderá efetuar outro disparo, já que o disparo anterior foi "dissipado" -> (esse jogo só permite que uma bala por jogador fique ativa)
+                            i=0;//a trajetória da bala fica armazenada na forma de duplas ordenadas na matriz bala, o "i" serve pra passar em ordem pelas coordenadas guardadas na matriz bala
+                            al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);//desenhando o mapa
+                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa(o boneco tava com um corpinho e um cabeção), há controle de pixels que é desenhado
+                            setarVida(vida);//essa função recebe um inteiro que dirá o número de corações(vidas) o personagem tem
+                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os corações transparente
+                            al_draw_bitmap(bvida, 0, 0, 0);//desenhando os corações(vidas) na tela
+                            al_flip_display();//atualizando a tela
+                            al_clear_to_color(al_map_rgb(0, 0, 0));//evita restos de pixels
+                        }else{//Se não há obstáculo, a bala poderá ser desenhadada
                     
-                            tiro = al_load_bitmap("resources/sprite do tiro.bmp");
-                            al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
-                            setarVida(vida);
-                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
-                            al_convert_mask_to_alpha(tiro,al_map_rgb(255,0,255));
-                            al_draw_scaled_bitmap(tiro, 19 , 18, 19, 18, ((bala[testando][i][0])), ((bala[testando][i][1])),12,11.3, 0);
-                            al_draw_bitmap(bvida, 0, 0, 0);
-                            al_flip_display();
-                            al_clear_to_color(al_map_rgb(0, 0, 0));
-                            if(m<1.73 && m>-1.73){
-                                
-                                i=i+10;
-                            }else{
-                                
-                                i=i+10;
-                            }
-
+                            tiro = al_load_bitmap("resources/sprite do tiro.bmp");//carregando a imagem que contém a bala
+                            al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);//desenhando o mapa
+                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa(o boneco tava com um corpinho e um cabeção), há controle de pixels que é desenhado
+                            setarVida(vida);//essa função recebe um inteiro que dirá o número de corações(vidas) o personagem tem
+                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os corações transparente
+                            al_convert_mask_to_alpha(tiro,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os tiros transparente
+                            al_draw_scaled_bitmap(tiro, 19 , 18, 19, 18, ((bala[testando][i][0])), ((bala[testando][i][1])),12,11.3, 0);//desenha a imagem com 12 x 11.3 pixels para a bala ficar menor que o personagem
+                            al_draw_bitmap(bvida, 0, 0, 0);//desenhando os corações(vidas) na tela
+                            al_flip_display();//atualizando a tela
+                            al_clear_to_color(al_map_rgb(0, 0, 0));//evita restos de pixels  
+                            i=i+10;//vai somando 10 para a a bala não ficar muito lenta(pega de 10 em 10 duplas ordenadas)     
                         }
-                        }else{
-                            perm=0;
-                            i=0;
-                             al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
-                            setarVida(vida);
-                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));
-                            al_draw_bitmap(bvida, 0, 0, 0);
-                            al_flip_display();
-                            al_clear_to_color(al_map_rgb(0, 0, 0));
+                        }else{//se bala[testando][i][0]==2, significa que não há mais duplas ordenadas referentes a trajetória, então a bala deverá ser "dissipada", ou seja, não será mais desenhada
+                            perm=0;//em consequência do dissipamento da bala, "perm" volta a valer 0 para o jogador poder voltar a disparar 
+                            i=0;//volta para primeira dupla ordenada, pois ela que deverá ser usada primeiramente quando um novo disparo for efetuado
+                             al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);//desenhando o mapa
+                            al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa(o boneco tava com um corpinho e um cabeção), há controle de pixels que é desenhado
+                            setarVida(vida);//essa função recebe um inteiro que dirá o número de corações(vidas) o personagem tem
+                            al_convert_mask_to_alpha(bvida,al_map_rgb(255,0,255));//deixando a cor rosa(que tá no fundo) na imagem que contém os corações transparente
+                            al_draw_bitmap(bvida, 0, 0, 0);//desenhando os corações(vidas) na tela
+                            al_flip_display();//atualizando a tela
+                            al_clear_to_color(al_map_rgb(0, 0, 0));//evita restos de pixels
                         }
                 }
             }
@@ -778,5 +765,6 @@ void setarVida(int n){
         bvida = al_load_bitmap("resources/bvida0.png");
     }
 }
+
 
 
