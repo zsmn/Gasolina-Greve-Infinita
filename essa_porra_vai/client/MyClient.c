@@ -3,11 +3,12 @@
 #include <allegro5/allegro_acodec.h>
 #include <allegro5/allegro_image.h>
 #include <allegro5/allegro_primitives.h>
+#include <allegro5/allegro_font.h>
+#include <allegro5/allegro_ttf.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include "client.h"
 #define jogadores 2
-#define IP "127.0.0.1"
 #define passo 1
 /* variaveis globais */
 const float tempofade = 0.3;
@@ -22,6 +23,7 @@ int jogar = 1;
 int selecao;
 int dir_x = passo, dir_y = passo;
 char matrizOcupada[40][61];
+int opcoesat = 0;
 /* variaveis da animacao do personagem */
 const int maxFrame = 2;
 int frameCount = 0;
@@ -47,12 +49,14 @@ char persEsc[jogadores];
 /* armazenamento da resposta do server e uso da ampulheta */
 int status = 0;
 char amp[100];
+char str[15];
 /* criação do display e de alguns bitmaps */
 ALLEGRO_DISPLAY *janela = NULL; //ponteiro para a janela
 ALLEGRO_AUDIO_STREAM *musica = NULL; //ponteiro para a musica
 ALLEGRO_EVENT_QUEUE *fila_eventos = NULL;  //ponteiro para a fila de eventos
 ALLEGRO_BITMAP *imagem = NULL;  //ponteiro para a imagem
 ALLEGRO_BITMAP *menu = NULL;  //ponteiro para o menu do jogo
+ALLEGRO_BITMAP *options = NULL;  //ponteiro para o menu de opcoes(ip) do jogo
 ALLEGRO_BITMAP *grupo = NULL;   //lonteiro para o bitmap da imagem do grupo
 ALLEGRO_BITMAP *fundo = NULL; //ponteiro do pano de fundo
 ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
@@ -71,11 +75,14 @@ ALLEGRO_BITMAP *perso6 = NULL;
 /* vida de personagens */
 ALLEGRO_BITMAP *bvida = NULL;
 ALLEGRO_TIMER *timer = NULL; // inicia o timer
+/* inicia a fonte */
+ALLEGRO_FONT *fonte = NULL;
+
 /* declaração de funções */
 void conectar();
 int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//andar na matriz
-void fadeout(int velocidade);  //função pra dar o fadeout
-void fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
+int fadeout(int velocidade);  //função pra dar o fadeout
+int fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
 void setAudio(char k[]); //função de audio
 void setarVida(int n);
 bool inicializar();  //função q inicializa
@@ -89,12 +96,18 @@ void inicializaMenu();
 void selectPersonagem();
 void jogoInit();
 void destroy();
+void writeIP(ALLEGRO_EVENT event, char str[]);
+
 int main(void){
+    strcpy(str, "127.0.0.1");
     system("clear");
     /* declaracao de variaveis */
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
         return -1;
     }
+    al_init_font_addon();
+    al_init_ttf_addon();
+    fonte = al_load_font("resources/aa.ttf", 82, 0);
     preencheMatriz(matrizOcupada);
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
@@ -179,7 +192,7 @@ void desenhar(){
     al_flip_display();
     al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
 }
-void fadeout(int velocidade){
+int fadeout(int velocidade){
     ALLEGRO_BITMAP *buffer = NULL;
     buffer = al_create_bitmap(LARGURA_TELA, ALTURA_TELA);
     al_set_target_bitmap(buffer);
@@ -205,7 +218,7 @@ void fadeout(int velocidade){
     }
     al_destroy_bitmap(buffer);
 } 
-void fadein(ALLEGRO_BITMAP *imagem, int velocidade){
+int fadein(ALLEGRO_BITMAP *imagem, int velocidade){
     if (velocidade < 0){
         if(velocidade<0.0001){
             return 0;
@@ -426,7 +439,7 @@ void setarVida(int n){
 void conectar(){
     enum conn_ret_t ans;
     do{
-        ans = connectToServer(IP);      
+        ans = connectToServer(str);      
         if (ans == SERVER_DOWN) {
             puts("Servidor esta baixo :(!");
         }
@@ -444,56 +457,94 @@ void conectar(){
     fprintf(stderr,"ei, seu id eh: %d\n",id);
 }
 void inicializaMenu(){
-    while(jogar != 0){
-        al_draw_bitmap(menu, 0, 0, 0);
+    options = al_load_bitmap("resources/ip.png");
+    while(jogar != 0 || opcoesat == 1){
+        if(jogar == 1) al_draw_bitmap(menu, 0, 0, 0);
         fadeout(0.000001);
         while(!al_is_event_queue_empty(fila_eventos)){
             ALLEGRO_EVENT evento;
             al_wait_for_event(fila_eventos, &evento);
-            if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
-                /* botao de inicio */
-                if(evento.mouse.x >= 112 && evento.mouse.x <= 362 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-                    menu = al_load_bitmap("resources/jogar_up.bmp");
-                    al_draw_bitmap(menu,0,0,0);
-                    al_flip_display();
-                    al_rest(0.5);
-                    menu = al_load_bitmap("resources/menu.bmp");
-                    al_draw_bitmap(menu,0,0,0);
-                    jogar = 0;
-                    selecao = 1;
+            if(jogar != 0){
+                if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
+                    /* botao de inicio */
+                    if(evento.mouse.x >= 112 && evento.mouse.x <= 362 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                        menu = al_load_bitmap("resources/jogar_up.bmp");
+                        al_draw_bitmap(menu,0,0,0);
+                        al_flip_display();
+                        al_rest(0.2);
+                        menu = al_load_bitmap("resources/menu.bmp");
+                        al_draw_bitmap(menu,0,0,0);
+                        jogar = 0;
+                        selecao = 1;
+                    }
+                    /* botao de opcoes */
+                    if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                        menu = al_load_bitmap("resources/opcoes_up.bmp");
+                        al_draw_bitmap(menu,0,0,0);
+                        al_flip_display();
+                        al_rest(0.2);
+                        menu = al_load_bitmap("resources/menu.bmp");
+                        al_draw_bitmap(menu,0,0,0);
+                        jogar = 0;
+                        selecao = 0;
+                        opcoesat = 1;
+                        al_draw_bitmap(options, 0, 0, 0);
+                        if (strlen(str) > 0){
+                            al_draw_text(fonte, al_map_rgb(255, 255, 255), 470, 450, ALLEGRO_ALIGN_CENTRE, str);
+                        }   
+                    }
+                    /* botao de sair */
+                    if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
+                        menu = al_load_bitmap("resources/sair_up.bmp");
+                        al_draw_bitmap(menu,0,0,0);
+                        al_flip_display();
+                        al_rest(0.2);
+                        menu = al_load_bitmap("resources/menu.bmp");
+                        al_draw_bitmap(menu,0,0,0);
+                        al_flip_display();
+                        al_rest(0.5);
+                        al_destroy_audio_stream(musica);
+                        al_destroy_event_queue(fila_eventos);
+                        al_destroy_display(janela); //tudo termina
+                    }
                 }
-                /* botao de opcoes */
-                if(evento.mouse.x >= 382 && evento.mouse.x <= 607 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-                    menu = al_load_bitmap("resources/opcoes_up.bmp");
-                    al_draw_bitmap(menu,0,0,0);
-                    al_flip_display();
-                    al_rest(0.5);
-                    menu = al_load_bitmap("resources/menu.bmp");
-                    al_draw_bitmap(menu,0,0,0);
-                    jogar = 0;
-                    selecao = 0;
-                }
-                /* botao de sair */
-                if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
-                    menu = al_load_bitmap("resources/sair_up.bmp");
-                    al_draw_bitmap(menu,0,0,0);
-                    al_flip_display();
-                    al_rest(0.5);
-                    menu = al_load_bitmap("resources/menu.bmp");
-                    al_draw_bitmap(menu,0,0,0);
-                    al_flip_display();
-                    al_rest(0.5);
-                    al_destroy_audio_stream(musica);
-                    al_destroy_event_queue(fila_eventos);
-                    al_destroy_display(janela); //tudo termina
-                    return 0;
+            }else{
+                if(opcoesat == 1 && evento.type == ALLEGRO_EVENT_KEY_CHAR){
+                    writeIP(evento, str);
+                    al_draw_bitmap(options, 0, 0, 0);
+                    if (strlen(str) > 0){
+                        al_draw_text(fonte, al_map_rgb(255, 255, 255), 470, 450, ALLEGRO_ALIGN_CENTRE, str);
+                    }
                 }
             }
         }
+        al_flip_display();
         al_rest(0.1);
     } 
     fadeout(1);
 }
+
+
+void writeIP(ALLEGRO_EVENT event, char str[]){
+	if(strlen(str) <= 15){
+		char temp[] = {event.keyboard.unichar, '\0'};
+		if(event.type == ALLEGRO_EVENT_KEY_CHAR){
+			if ((event.keyboard.unichar >= '0' && event.keyboard.unichar <= '9') || event.keyboard.unichar == '.'){
+				strcat(str, temp);
+			}
+		}
+	}
+	if(strlen(str)){
+		if(event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE){
+			str[strlen(str)-1] = '\0';
+		}
+	}
+    if(event.keyboard.keycode == ALLEGRO_KEY_ENTER){
+        opcoesat = 0;
+        jogar = 1;
+    }
+}
+
 void selectPersonagem(){
     personagens = al_load_bitmap("resources/perso.png");
     al_draw_bitmap(personagens, 0, 0, 0);
@@ -612,7 +663,6 @@ void jogoInit(){
             }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai
                 sair = true;
-                return 0;
             }
             if(al_is_event_queue_empty(fila_eventos)) {
                 if(tecl == 's' || tecl == 'w' || tecl == 'a' || tecl == 'd'){
