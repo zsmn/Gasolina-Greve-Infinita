@@ -13,7 +13,7 @@ RM := rm -f
 MK := mkdir -p
 #Uncomment above for intense debugging
 #CFLAGS := -Wall -Werror -Wconversion -Wextra
-LDLIB := -lm -lallegro_image -lallegro -lallegro_ttf -lallegro_font -lallegro_audio -lallegro_acodec -lallegro_primitives
+LDLIB := -lm -lallegro_image -lallegro -lallegro_ttf -lallegro_font -lallegro_audio -lallegro_acodec -lallegro_primitives -lallegro_ttf -lallegro_font
 
 OUTPUTDIR := bin
 LIBDIR := lib
@@ -66,4 +66,3 @@ runClient:
 
 runServer:
 	@echo "\n  Starting to run $(SERVERNAME)...\n"; ./$(OUTPUTDIR)/$(SERVERNAME) 
-
