@@ -7,16 +7,19 @@
 #include <allegro5/allegro_ttf.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <stdlib.h>
 #include "client.h"
 #define jogadores 2
 #define passo 1
 /* variaveis globais */
-const float tempofade = 0.1;
+const float tempofade = 0.3;
 const int LARGURA_TELA = 960;
-const int ALTURA_TELA = 703; //ðeclaro o tamanho das telas //declaro quantos passos ando
+const int ALTURA_TELA = 703; //declaro o tamanho das telas //declaro quantos passos ando
 bool sair = false;
 // variavel pra obter a tecla pressionada
 char tecl;
+char end[100];
+int morreu;
 int i;  
 int auxiliar = 0;
 int jogar = 1;
@@ -41,10 +44,10 @@ int vida = 3;
 char posx = 8; //seto a posição e a passada do personagem
 char posy = 17;
 int pp;
-int frameWidth = 42;
-int frameHeight = 38;
+int frameWidth[6] = {45, 40, 40, 42, 40, 35};
+int frameHeight[6] = {41, 48 , 50, 46, 42, 46};
 int curFrame = 0;
-char pos[jogadores][2];
+char pos[jogadores][4];
 char persEsc[jogadores];
 /* armazenamento da resposta do server e uso da ampulheta */
 int status = 0;
@@ -111,9 +114,11 @@ int main(void){
     preencheMatriz(matrizOcupada);
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
+    /*
     efeitoFade(fundo);
     grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
     efeitoFade(grupo);
+    */
     menu = al_load_bitmap("resources/menu.bmp");
     fadein(menu, 1);
     /* seta os bitmaps */
@@ -124,12 +129,15 @@ int main(void){
     }
     inicializaMenu();
     selectPersonagem();
-    conectar();                   
-    sendMsgToServer(&pers, sizeof(char));
+    conectar();        
+    sendMsgToServer(&pers, sizeof(char));           
     loading = al_load_bitmap("resources/loading.png");
     while(status != 1){
         drawHourGlass();
     }
+    recvMsgFromServer(persEsc, WAIT_FOR_IT);
+    fprintf(stderr, "\n%c\n", persEsc[0]);
+    //fprintf(stderr, "%c\n", persEsc[0]);
     jogoInit();
     destroy();
     return 0;
@@ -176,18 +184,15 @@ void drawHourGlass(){
 void desenhar(){
     int i = 0;
     al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
-     /* desenha os quadradinhos de cada jogador */
+    /* desenha os quadradinhos de cada jogador */
     for(i=0;i<jogadores;i++){
-        al_draw_bitmap(player[i], pos[i][0]*16, pos[i][1]*16, 0);   
+        if(pos[i][0] > 0){
+            sprintf(end, "resources/bon%c.png", persEsc[i]);
+            quadrado = al_load_bitmap(end);
+            al_convert_mask_to_alpha(quadrado,al_map_rgb(255,0,255));
+            al_draw_scaled_bitmap(quadrado, (pos[i][3]-48) * frameWidth[persEsc[i]-49],  (pos[i][2]-48) * frameHeight[persEsc[i]-49], frameWidth[persEsc[i]-49], frameHeight[persEsc[i]-49], ((pos[i][0]) * 16), ((pos[i][1]) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
+        }
     }
-    /* printa as posicoes dos jogadores */
-    /*
-    for(i=0;i<jogadores;i++){
-        fprintf(stderr," jogadorID: %d posicao x:%d posicao y:%d\n que ta com o personagem %c",i,pos[i][0],pos[i][1],persEsc[i]);
-    }
-    */
-    //fprintf(stderr,"obs: meu id eh: %d",id);
-    al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, ((posx) * 16), ((posy) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
     setarVida(vida);
     al_flip_display();
     al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
@@ -296,7 +301,7 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     }
     al_set_window_title(janela, "IP GAME");
     //quadrado = al_create_bitmap(20, 20);
-    quadrado = al_load_bitmap("bon2.png"); // cria o 'personagem'
+    quadrado = al_load_bitmap("resources/bon1.png"); // cria o 'personagem'
     if (!quadrado){
         fprintf(stderr, "Falha ao criar bitmap.\n");
         al_destroy_display(janela);
@@ -455,6 +460,18 @@ void conectar(){
     } while(ans!=SERVER_UP);
     recvMsgFromServer(&id,WAIT_FOR_IT);
     fprintf(stderr,"ei, seu id eh: %d\n",id);
+    if(id == 1){
+        posx = 4;
+        posy = 4;
+    }
+    if(id == 2){
+        posy = 14;
+        posx = 4;
+    }
+    if(id == 3){
+        posy = 39;
+        posx = 7;
+    }
 }
 void inicializaMenu(){
     options = al_load_bitmap("resources/ip.png");
@@ -506,6 +523,7 @@ void inicializaMenu(){
                         al_destroy_audio_stream(musica);
                         al_destroy_event_queue(fila_eventos);
                         al_destroy_display(janela); //tudo termina
+                        exit(1);
                     }
                 }
             }else{
@@ -549,12 +567,12 @@ void selectPersonagem(){
     personagens = al_load_bitmap("resources/perso.png");
     al_draw_bitmap(personagens, 0, 0, 0);
     fadein(personagens, 1);
-    perso1 = al_load_bitmap("resources/perso1.png");
-    perso2 = al_load_bitmap("resources/perso2.png");
+    perso1 = al_load_bitmap("resources/perso2.png");
+    perso2 = al_load_bitmap("resources/perso1.png");
     perso3 = al_load_bitmap("resources/perso3.png");
-    perso4 = al_load_bitmap("resources/perso4.png");
+    perso4 = al_load_bitmap("resources/perso6.png");
     perso5 = al_load_bitmap("resources/perso5.png");
-    perso6 = al_load_bitmap("resources/perso6.png");
+    perso6 = al_load_bitmap("resources/perso4.png");
      while(selecao != 0){
         al_draw_bitmap(personagens, 0, 0, 0);
         desenharSelecao();
@@ -598,16 +616,37 @@ void selectPersonagem(){
     } 
 }
 void jogoInit(){
+    int i;
+    pos[id][0] = posx;
+    pos[id][1] = posy;
+    pos[id][2]='0';
+    pos[id][3] = '0';
+    sendMsgToServer(pos[id], 4 * sizeof(char));
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
     al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
-    al_draw_scaled_bitmap(quadrado, curFrame * frameWidth, pp * frameHeight, frameWidth, frameHeight, (posx) * 16, (posy) * 16,21,19, 0);//desenha o personagem
+    for(i=0;i<jogadores;i++){
+        if(pos[i][0] > 0){
+            sprintf(end, "resources/bon%c.png", persEsc[i]);
+            quadrado = al_load_bitmap(end);
+            al_convert_mask_to_alpha(quadrado,al_map_rgb(255,0,255));
+            al_draw_scaled_bitmap(quadrado, (pos[i][3]-48) * frameWidth[pers-49],  (pos[i][2]-48) * frameHeight[pers-49], frameWidth[pers-49], frameHeight[pers-49], ((pos[i][0]) * 16), ((pos[i][1]) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
+        }
+    } 
     setarVida(vida);
     setAudio("sounds/whenyouwere.ogg");//começa a melhor musica possivel
-    recvMsgFromServer(persEsc, WAIT_FOR_IT);
     while (!sair){//entra no loop do jogo
         recvMsgFromServer(pos,DONT_WAIT);
         desenhar();
+        if(pos[0][0] == pos[1][0] && pos[0][1] == pos[1][1] && id == 0){
+            pos[id][1] = -1;
+            pos[id][0] = -1;
+            morreu = 1;
+            sendMsgToServer(pos[id], 4 * sizeof(char));
+        }
+        if(morreu){
+            continue;
+        }
         while (!al_is_event_queue_empty(fila_eventos)){//se  acontecer algo
             ALLEGRO_EVENT evento;   //declara variavel eveno
             al_wait_for_event(fila_eventos, &evento);//esse evento fica na fila
@@ -623,41 +662,46 @@ void jogoInit(){
                     }
                 }
             }
+            
             if (evento.type == ALLEGRO_EVENT_KEY_DOWN){
                 if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
                     tecl='w';
                     posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
-                    pp = 1;
                     pos[id][0]=posx;
                     pos[id][1]=posy;
-                    sendMsgToServer(pos[id],2*sizeof(char));
+                    pos[id][2]='1';
+                    pos[id][3]=curFrame + 48;
+                    sendMsgToServer(pos[id],4*sizeof(char));
                     desenhar();
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
                     tecl='a';
                     posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
-                    pp = 2;
                     pos[id][0]=posx;
                     pos[id][1]=posy;
-                    sendMsgToServer(pos[id],2*sizeof(char));
+                    pos[id][2]='2';
+                    pos[id][3]=curFrame + 48;
+                    sendMsgToServer(pos[id],4*sizeof(char));
                     desenhar();
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
                     tecl='s';
                     posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
-                    pp = 0;
                     pos[id][0]=posx;
                     pos[id][1]=posy;
-                    sendMsgToServer(pos[id],2*sizeof(char));
+                    pos[id][2]='0';
+                    pos[id][3]=curFrame + 48;
+                    sendMsgToServer(pos[id],4*sizeof(char));
                     desenhar();
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
                     tecl='d';
-                    pp = 3;
                     posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
                     pos[id][0]=posx;
                     pos[id][1]=posy;
-                    sendMsgToServer(pos[id],2*sizeof(char));
+                    pos[id][2]='3';
+                    pos[id][3]=curFrame + 48;
+                    sendMsgToServer(pos[id],4*sizeof(char));
                     desenhar();
                 }
             }
@@ -672,6 +716,8 @@ void jogoInit(){
                                 curFrame = 0;
                             }
                             frameCount = 0;
+                            pos[i][3]=curFrame + 48;
+                            sendMsgToServer(pos[id],4*sizeof(char));
                         }
                     }
                     tecl = '0'; // evita que entre no loop dnv
