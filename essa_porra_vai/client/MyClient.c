@@ -526,7 +526,7 @@ void inicializaMenu(){
 
 
 void writeIP(ALLEGRO_EVENT event, char str[]){
-	if(strlen(str) <= 15){
+	if(strlen(str) < 15){
 		char temp[] = {event.keyboard.unichar, '\0'};
 		if(event.type == ALLEGRO_EVENT_KEY_CHAR){
 			if ((event.keyboard.unichar >= '0' && event.keyboard.unichar <= '9') || event.keyboard.unichar == '.'){
