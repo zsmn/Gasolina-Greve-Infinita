@@ -9,13 +9,14 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "client.h"
-#define jogadores 2
+#define jogadores 4
 #define passo 1
 /* variaveis globais */
 const float tempofade = 0.3;
 const int LARGURA_TELA = 960;
 const int ALTURA_TELA = 703; //declaro o tamanho das telas //declaro quantos passos ando
 bool sair = false;
+int cond;
 // variavel pra obter a tecla pressionada
 char tecl;
 char end[100];
@@ -47,7 +48,7 @@ int pp;
 int frameWidth[6] = {45, 40, 40, 42, 40, 35};
 int frameHeight[6] = {41, 48 , 50, 46, 42, 46};
 int curFrame = 0;
-char pos[jogadores][4];
+char pos[jogadores][5];
 char persEsc[jogadores];
 /* armazenamento da resposta do server e uso da ampulheta */
 int status = 0;
@@ -80,19 +81,15 @@ ALLEGRO_BITMAP *bvida = NULL;
 ALLEGRO_TIMER *timer = NULL; // inicia o timer
 /* inicia a fonte */
 ALLEGRO_FONT *fonte = NULL;
-
 /* declaração de funções */
 void conectar();
-int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//andar na matriz
 int fadeout(int velocidade);  //função pra dar o fadeout
 int fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
 void setAudio(char k[]); //função de audio
 void setarVida(int n);
 bool inicializar();  //função q inicializa
-void preencheMatriz();// cria matriz
 void desenhar();
 void drawHourGlass();
-int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);//anda na matriz
 void desenharSelecao();
 void efeitoFade(ALLEGRO_BITMAP *bitmap);
 void inicializaMenu();
@@ -100,7 +97,6 @@ void selectPersonagem();
 void jogoInit();
 void destroy();
 void writeIP(ALLEGRO_EVENT event, char str[]);
-
 int main(void){
     strcpy(str, "127.0.0.1");
     system("clear");
@@ -111,7 +107,6 @@ int main(void){
     al_init_font_addon();
     al_init_ttf_addon();
     fonte = al_load_font("resources/aa.ttf", 82, 0);
-    preencheMatriz(matrizOcupada);
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
     /*
@@ -130,21 +125,20 @@ int main(void){
     inicializaMenu();
     selectPersonagem();
     conectar();        
-    sendMsgToServer(&pers, sizeof(char));           
+    sendMsgToServer(&pers, 1);          
     loading = al_load_bitmap("resources/loading.png");
     while(status != 1){
         drawHourGlass();
     }
     recvMsgFromServer(persEsc, WAIT_FOR_IT);
-    fprintf(stderr, "\n%c\n", persEsc[0]);
+    //fprintf(stderr, "\n%c\n", persEsc[0]);
     //fprintf(stderr, "%c\n", persEsc[0]);
     jogoInit();
     destroy();
     return 0;
 }
-
 void desenharSelecao(){
-    al_draw_bitmap(personagens, 0, 0, 0);       
+    al_draw_bitmap(personagens, 0, 0, 0);      
     al_convert_mask_to_alpha(perso1,al_map_rgb(255,0,255));
     al_convert_mask_to_alpha(perso2,al_map_rgb(255,0,255));
     al_convert_mask_to_alpha(perso3,al_map_rgb(255,0,255));
@@ -161,7 +155,7 @@ void desenharSelecao(){
 }
 void efeitoFade(ALLEGRO_BITMAP *bitmap){
     fadein(bitmap, 1);
-    al_draw_bitmap(bitmap, 0, 0, 0);   
+    al_draw_bitmap(bitmap, 0, 0, 0);  
     al_rest(tempofade);
     fadeout(1);
 }
@@ -222,7 +216,7 @@ int fadeout(int velocidade){
         al_rest(0.005); // Não é necessário caso haja controle de FPS
     }
     al_destroy_bitmap(buffer);
-} 
+}
 int fadein(ALLEGRO_BITMAP *imagem, int velocidade){
     if (velocidade < 0){
         if(velocidade<0.0001){
@@ -273,7 +267,7 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     if (!janela){
         fprintf(stderr, "Falha ao criar a janela.\n");
         return false;
-    } 
+    }
     // inicialização e configuração do mouse
     if(!al_install_mouse()){
         fprintf(stderr, "Falha ao inicializar o mouse");
@@ -313,7 +307,7 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     al_set_target_bitmap(al_get_backbuffer(janela));
     fundo = al_load_bitmap("resources/cin.jpeg");
     if(fundo==NULL){
-    fprintf(stderr,"essa porra deu bug");
+        fprintf(stderr,"essa porra deu bug");
     }
     al_register_event_source(fila_eventos, al_get_keyboard_event_source());
     al_register_event_source(fila_eventos, al_get_display_event_source(janela));
@@ -322,107 +316,11 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     al_start_timer(timer);
     return true;
 }
- 
 void setAudio(char k[]){ //comeca musiquinha
     al_set_audio_stream_playing(musica, false);
     musica = al_load_audio_stream(k, 4, 1024);
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer());
     al_set_audio_stream_playing(musica, true);
-}
- 
-void preencheMatriz(char matrizOcupada[][61]){//foi alterada
-    strcpy(matrizOcupada[0],"111111111111111111111111111111111111111111111111111111111111");
-    strcpy(matrizOcupada[1],"111111111111111111111111111111111111111111111111111111111111");
-    strcpy(matrizOcupada[2],"111111111111111111111111111111111111111111111111111111111111");
-    strcpy(matrizOcupada[3],"111111111111111111111111111111111111111111111111111111111111");
-    strcpy(matrizOcupada[4],"111100000000000000000000000000000000000000000000000000001111");
-    strcpy(matrizOcupada[5],"111100000000000000000000000000000000000000000000000000001111");
-    strcpy(matrizOcupada[6],"111100000000000000000000011110001111110011111111111111001111");
-    strcpy(matrizOcupada[7],"111111111111111111111111111111111111110011111111111111001111");
-    strcpy(matrizOcupada[8],"111111111111111111111111100111111100000000000000000011001111");
-    strcpy(matrizOcupada[9],"111111111111111111111111100111111100000000000000000011001111");
-    strcpy(matrizOcupada[10],"111111111111111111111111100111111111111111111111111011001111");
-    strcpy(matrizOcupada[11],"111111111111111111111111100111111111111111111111111011001111");
-    strcpy(matrizOcupada[12],"111111111111111111111111100111111111111111111111111011111111");
-    strcpy(matrizOcupada[13],"111111111111111111111111101111111111111111111111111011111111");
-    strcpy(matrizOcupada[14],"111100000111111111000000000000000000000000000000000000000000");
-    strcpy(matrizOcupada[15],"111100000111111111000000000000000000000000000000000000000000");
-    strcpy(matrizOcupada[16],"111100000111111111100000000000000000000000000000000000000000");
-    strcpy(matrizOcupada[17],"111100000000000000000000000000000000000000000000000000000000");
-    strcpy(matrizOcupada[18],"111100000000000000000000000000000100000000000000000011111111");
-    strcpy(matrizOcupada[19],"111100000000000000000001111111111111111110000000000011111111");
-    strcpy(matrizOcupada[20],"111100000000000000000011111111111111111110001111111111111111");
-    strcpy(matrizOcupada[21],"111100000000111000000001000000111111111110001111111111111111");
-    strcpy(matrizOcupada[22],"111100000000111000000001000000111111111110001111111111001111");
-    strcpy(matrizOcupada[23],"111100000000000000000001111111111111111010001111111111001111");
-    strcpy(matrizOcupada[24],"000000000000000000000001111111100000000000000000000000001111");
-    strcpy(matrizOcupada[25],"000000000000000000000001111111111111111110001111111111001111");
-    strcpy(matrizOcupada[26],"000000000000000000000000000000000000000000000000000011001111");
-    strcpy(matrizOcupada[27],"111111110000000000000000000000000000000000000000000011001111");
-    strcpy(matrizOcupada[28],"111111110000000011110000000000001111111111111111111111001111");
-    strcpy(matrizOcupada[29],"111111111111111111111111000000001111111111111111111111001111");
-    strcpy(matrizOcupada[30],"111111111111111111111111000000001111111111111111111111001111");
-    strcpy(matrizOcupada[31],"111111111111111111111111000000001111111111111111111111001111");
-    strcpy(matrizOcupada[32],"111100000011100000001111000000000000000000000000000000001111");
-    strcpy(matrizOcupada[33],"111100000000000010001111000000000000000000000000000000001111");
-    strcpy(matrizOcupada[34],"111100000000000000001111000000000000000000000000000000001111");
-    strcpy(matrizOcupada[35],"111111111100111111111111000000000000000000000000000000001111");
-    strcpy(matrizOcupada[36],"111100000000000000001111111111111111111101111111111000001111");
-    strcpy(matrizOcupada[37],"111100000000000000000000111111111111111101111111111000001111");
-    strcpy(matrizOcupada[38],"111100000000000000000000000000000000000000110000000000111111");
-    strcpy(matrizOcupada[39],"111100000000000000000000000000000000000000111111111111111111");
-}
-int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]){
-    if(tecla == 'w'){
-        if(matrizOcupada[posicaoY-1][posicaoX]=='0'){
-            matrizOcupada[posicaoY][posicaoX] = '0';
-            matrizOcupada[posicaoY-1][posicaoX] = '1';
-            posicaoY--;
-            return posicaoY;
-        }
-        else{
-            return posicaoY;
-        }
-    }
-    else{
-        if(tecla == 'a'){
-            if(matrizOcupada[posicaoY][posicaoX-1]=='0'){
-                matrizOcupada[posicaoY][posicaoX]='0';
-                matrizOcupada[posicaoY][posicaoX-1]='1';
-                posicaoX--;
-                return posicaoX;
-            }
-            else{
-                return posicaoX;
-            }
-        }
-        else{
-            if(tecla == 's'){
-                if(matrizOcupada[posicaoY+1][posicaoX]=='0'){
-                    matrizOcupada[posicaoY][posicaoX]='0';
-                    matrizOcupada[posicaoY+1][posicaoX]='1';
-                    posicaoY++;
-                    return posicaoY;
-                }
-                else{
-                    return posicaoY;
-                }  
-            }
-            else if(tecla == 'd'){
-                //printf("ENTREI SDJOIASJ\n");
-                if(matrizOcupada[posicaoY][posicaoX+1]=='0'){
-                    //printf("AQUI TBM\n");
-                    matrizOcupada[posicaoY][posicaoX]='0';
-                    matrizOcupada[posicaoY][posicaoX+1]='1';
-                    posicaoX++;
-                    return posicaoX;
-                }
-                else{
-                    return posicaoX;
-                }
-            }
-        }
-    }
 }
 void setarVida(int n){
     if(n == 3){
@@ -459,7 +357,7 @@ void conectar(){
         }
     } while(ans!=SERVER_UP);
     recvMsgFromServer(&id,WAIT_FOR_IT);
-    fprintf(stderr,"ei, seu id eh: %d\n",id);
+    //fprintf(stderr,"ei, seu id eh: %d\n",id);
     if(id == 1){
         posx = 4;
         posy = 4;
@@ -508,7 +406,7 @@ void inicializaMenu(){
                         al_draw_bitmap(options, 0, 0, 0);
                         if (strlen(str) > 0){
                             al_draw_text(fonte, al_map_rgb(255, 255, 255), 470, 450, ALLEGRO_ALIGN_CENTRE, str);
-                        }   
+                        }  
                     }
                     /* botao de sair */
                     if(evento.mouse.x >= 626 && evento.mouse.x <= 862 &&evento.mouse.y >= 482 && evento.mouse.y <= 580){
@@ -538,31 +436,31 @@ void inicializaMenu(){
         }
         al_flip_display();
         al_rest(0.1);
-    } 
+    }
     fadeout(1);
 }
-
-
+ 
+ 
 void writeIP(ALLEGRO_EVENT event, char str[]){
-	if(strlen(str) < 15){
-		char temp[] = {event.keyboard.unichar, '\0'};
-		if(event.type == ALLEGRO_EVENT_KEY_CHAR){
-			if ((event.keyboard.unichar >= '0' && event.keyboard.unichar <= '9') || event.keyboard.unichar == '.'){
-				strcat(str, temp);
-			}
-		}
-	}
-	if(strlen(str)){
-		if(event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE){
-			str[strlen(str)-1] = '\0';
-		}
-	}
+    if(strlen(str) < 15){
+        char temp[] = {event.keyboard.unichar, '\0'};
+        if(event.type == ALLEGRO_EVENT_KEY_CHAR){
+            if ((event.keyboard.unichar >= '0' && event.keyboard.unichar <= '9') || event.keyboard.unichar == '.'){
+                strcat(str, temp);
+            }
+        }
+    }
+    if(strlen(str)){
+        if(event.keyboard.keycode == ALLEGRO_KEY_BACKSPACE){
+            str[strlen(str)-1] = '\0';
+        }
+    }
     if(event.keyboard.keycode == ALLEGRO_KEY_ENTER){
         opcoesat = 0;
         jogar = 1;
     }
 }
-
+ 
 void selectPersonagem(){
     personagens = al_load_bitmap("resources/perso.png");
     al_draw_bitmap(personagens, 0, 0, 0);
@@ -613,7 +511,7 @@ void selectPersonagem(){
             }
         }
         al_rest(0.1);
-    } 
+    }
 }
 void jogoInit(){
     int i;
@@ -621,7 +519,8 @@ void jogoInit(){
     pos[id][1] = posy;
     pos[id][2]='0';
     pos[id][3] = '0';
-    sendMsgToServer(pos[id], 4 * sizeof(char));
+    pos[id][4]=0;
+    sendMsgToServer(pos[id], 5);
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
     al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
@@ -632,17 +531,17 @@ void jogoInit(){
             al_convert_mask_to_alpha(quadrado,al_map_rgb(255,0,255));
             al_draw_scaled_bitmap(quadrado, (pos[i][3]-48) * frameWidth[pers-49],  (pos[i][2]-48) * frameHeight[pers-49], frameWidth[pers-49], frameHeight[pers-49], ((pos[i][0]) * 16), ((pos[i][1]) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
         }
-    } 
+    }
     setarVida(vida);
     setAudio("sounds/whenyouwere.ogg");//começa a melhor musica possivel
     while (!sair){//entra no loop do jogo
         recvMsgFromServer(pos,DONT_WAIT);
         desenhar();
-        if(pos[0][0] == pos[1][0] && pos[0][1] == pos[1][1] && id == 0){
+        if(cond){
             pos[id][1] = -1;
             pos[id][0] = -1;
             morreu = 1;
-            sendMsgToServer(pos[id], 4 * sizeof(char));
+            sendMsgToServer(pos[id], 5);
         }
         if(morreu){
             continue;
@@ -662,46 +561,38 @@ void jogoInit(){
                     }
                 }
             }
-            
+           
             if (evento.type == ALLEGRO_EVENT_KEY_DOWN){
                 if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
                     tecl='w';
-                    posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
-                    pos[id][0]=posx;
-                    pos[id][1]=posy;
                     pos[id][2]='1';
                     pos[id][3]=curFrame + 48;
-                    sendMsgToServer(pos[id],4*sizeof(char));
+                    pos[id][4]=tecl;
+                    sendMsgToServer(pos[id],5);
                     desenhar();
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
                     tecl='a';
-                    posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
-                    pos[id][0]=posx;
-                    pos[id][1]=posy;
                     pos[id][2]='2';
                     pos[id][3]=curFrame + 48;
-                    sendMsgToServer(pos[id],4*sizeof(char));
+                    pos[id][4]=tecl;
+                    sendMsgToServer(pos[id],5);
                     desenhar();
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
                     tecl='s';
-                    posy = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
-                    pos[id][0]=posx;
-                    pos[id][1]=posy;
                     pos[id][2]='0';
                     pos[id][3]=curFrame + 48;
-                    sendMsgToServer(pos[id],4*sizeof(char));
+                    pos[id][4]=tecl;
+                    sendMsgToServer(pos[id],5);
                     desenhar();
                 }
                 if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
                     tecl='d';
-                    posx = bloqueiaPosicao(posx,posy,tecl,matrizOcupada);
-                    pos[id][0]=posx;
-                    pos[id][1]=posy;
                     pos[id][2]='3';
                     pos[id][3]=curFrame + 48;
-                    sendMsgToServer(pos[id],4*sizeof(char));
+                    pos[id][4]=tecl;
+                    sendMsgToServer(pos[id],5);
                     desenhar();
                 }
             }
@@ -716,8 +607,8 @@ void jogoInit(){
                                 curFrame = 0;
                             }
                             frameCount = 0;
+							sendMsgToServer(pos[id],5*sizeof(char));                                                                              
                             pos[i][3]=curFrame + 48;
-                            sendMsgToServer(pos[id],4*sizeof(char));
                         }
                     }
                     tecl = '0'; // evita que entre no loop dnv
