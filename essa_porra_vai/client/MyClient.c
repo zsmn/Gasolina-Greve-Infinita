@@ -535,8 +535,9 @@ void jogoInit(){
     setarVida(vida);
     setAudio("sounds/whenyouwere.ogg");//começa a melhor musica possivel
     while (!sair){//entra no loop do jogo
-        recvMsgFromServer(pos,DONT_WAIT);
-        desenhar();
+	if(recvMsgFromServer(pos,DONT_WAIT) != NO_MESSAGE){
+        	desenhar();
+	}
         if(cond){
             pos[id][1] = -1;
             pos[id][0] = -1;
