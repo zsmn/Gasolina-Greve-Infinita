@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "client.h"
-#define jogadores 4
+#define jogadores 3
 #define passo 1
 /* variaveis globais */
 const float tempofade = 0.3;
@@ -48,7 +48,7 @@ int pp;
 int frameWidth[6] = {45, 40, 40, 42, 40, 35};
 int frameHeight[6] = {41, 48 , 50, 46, 42, 46};
 int curFrame = 0;
-char pos[jogadores][5];
+char pos[jogadores][6];
 char persEsc[jogadores];
 /* armazenamento da resposta do server e uso da ampulheta */
 int status = 0;
@@ -67,6 +67,8 @@ ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
 ALLEGRO_BITMAP *loading = NULL;
 ALLEGRO_BITMAP *ampulheta = NULL;
 ALLEGRO_BITMAP* player[jogadores];
+ALLEGRO_BITMAP* telaVitoria = NULL;
+ALLEGRO_BITMAP* telaDerrota = NULL;
 /* tela de seleção de personagens */
 ALLEGRO_BITMAP *personagens = NULL; // tela da seleção de personagens
 /* character selection */
@@ -187,7 +189,11 @@ void desenhar(){
             al_draw_scaled_bitmap(quadrado, (pos[i][3]-48) * frameWidth[persEsc[i]-49],  (pos[i][2]-48) * frameHeight[persEsc[i]-49], frameWidth[persEsc[i]-49], frameHeight[persEsc[i]-49], ((pos[i][0]) * 16), ((pos[i][1]) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
         }
     }
-    setarVida(vida);
+    if(pos[id][0] < 0){
+        al_draw_text(fonte, al_map_rgb(255, 255, 255), 470, 0, ALLEGRO_ALIGN_CENTRE, "SPECTATING");
+    }
+ 
+    setarVida(pos[id][5]);
     al_flip_display();
     al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
 }
@@ -240,55 +246,55 @@ int fadein(ALLEGRO_BITMAP *imagem, int velocidade){
 bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     al_init_image_addon();
     if (!al_init()){
-        fprintf(stderr, "Falha ao inicializar Allegro.\n");
+        //fprintf(stderr, "Falha ao inicializar Allegro.\n");
         return false;
     }
-    timer = al_create_timer(1.0/480);//alterado
+    timer = al_create_timer(1.0/60);//alterado
     if(!timer){
-        fprintf(stderr, "Falha ao criar o timer.\n");
+        //fprintf(stderr, "Falha ao criar o timer.\n");
     }
     if (!al_install_audio()){
-        fprintf(stderr, "Falha ao inicializar áudio.\n");
+        //fprintf(stderr, "Falha ao inicializar áudio.\n");
         return false;
     }
     if (!al_init_acodec_addon()){
-        fprintf(stderr, "Falha ao inicializar codecs de áudio.\n");
+        //fprintf(stderr, "Falha ao inicializar codecs de áudio.\n");
         return false;
     }
     if (!al_reserve_samples(1)){
-        fprintf(stderr, "Falha ao alocar canais de áudio.\n");
+        //fprintf(stderr, "Falha ao alocar canais de áudio.\n");
         return false;
     }
     if (!al_install_keyboard()){
-        fprintf(stderr, "Falha ao inicializar teclado.\n");
+        //fprintf(stderr, "Falha ao inicializar teclado.\n");
         return false;
     }
     janela = al_create_display(LARGURA_TELA, ALTURA_TELA);
     if (!janela){
-        fprintf(stderr, "Falha ao criar a janela.\n");
+        //fprintf(stderr, "Falha ao criar a janela.\n");
         return false;
     }
     // inicialização e configuração do mouse
     if(!al_install_mouse()){
-        fprintf(stderr, "Falha ao inicializar o mouse");
+        //fprintf(stderr, "Falha ao inicializar o mouse");
         al_destroy_display(janela);
         return -1;
     }
     // Atribui o cursor padrão do sistema para ser usado
     if (!al_set_system_mouse_cursor(janela, ALLEGRO_SYSTEM_MOUSE_CURSOR_DEFAULT)){
-        fprintf(stderr, "Falha ao atribuir ponteiro do mouse.\n");
+        //fprintf(stderr, "Falha ao atribuir ponteiro do mouse.\n");
         al_destroy_display(janela);
         return -1;
     }
     fila_eventos = al_create_event_queue();
     if (!fila_eventos){
-        fprintf(stderr, "Falha ao criar fila de eventos.\n");
+        //fprintf(stderr, "Falha ao criar fila de eventos.\n");
         al_destroy_display(janela);
         return false;
     }
     musica = al_load_audio_stream("sounds/soundtest.ogg", 4, 1024);
     if (!musica){
-        fprintf(stderr, "Falha ao carregar audio.\n");
+       //fprintf(stderr, "Falha ao carregar audio.\n");
         al_destroy_event_queue(fila_eventos);
         al_destroy_display(janela);
         return false;
@@ -297,17 +303,19 @@ bool inicializar(){ //inicializa tudo e checa se tudo deu crto
     //quadrado = al_create_bitmap(20, 20);
     quadrado = al_load_bitmap("resources/bon1.png"); // cria o 'personagem'
     if (!quadrado){
-        fprintf(stderr, "Falha ao criar bitmap.\n");
+       // fprintf(stderr, "Falha ao criar bitmap.\n");
         al_destroy_display(janela);
         return 0;
     }
+    telaVitoria = al_load_bitmap("resources/win.png");
+    telaDerrota = al_load_bitmap("resources/lose.png");
     al_convert_mask_to_alpha(quadrado,al_map_rgb(255,0,255)); // usa a cor rosa como transparencia
     al_set_target_bitmap(quadrado);
     //al_clear_to_color(al_map_rgb(255, 0, 0));
     al_set_target_bitmap(al_get_backbuffer(janela));
     fundo = al_load_bitmap("resources/cin.jpeg");
     if(fundo==NULL){
-        fprintf(stderr,"essa porra deu bug");
+       // fprintf(stderr,"essa porra deu bug");
     }
     al_register_event_source(fila_eventos, al_get_keyboard_event_source());
     al_register_event_source(fila_eventos, al_get_display_event_source(janela));
@@ -373,8 +381,8 @@ void conectar(){
 }
 void inicializaMenu(){
     options = al_load_bitmap("resources/ip.png");
+	al_draw_bitmap(menu, 0, 0, 0);
     while(jogar != 0 || opcoesat == 1){
-        if(jogar == 1) al_draw_bitmap(menu, 0, 0, 0);
         fadeout(0.000001);
         while(!al_is_event_queue_empty(fila_eventos)){
             ALLEGRO_EVENT evento;
@@ -515,12 +523,14 @@ void selectPersonagem(){
 }
 void jogoInit(){
     int i;
+    int contador = 0;
     pos[id][0] = posx;
     pos[id][1] = posy;
     pos[id][2]='0';
     pos[id][3] = '0';
     pos[id][4]=0;
-    sendMsgToServer(pos[id], 5);
+	pos[id][5]=3;//vida
+    sendMsgToServer(pos[id], 6);
     imagem = al_load_bitmap("resources/aa.png");  //faz o download do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
     al_draw_bitmap(imagem, 0, 0, 0);  //coloca a imagem
@@ -532,27 +542,39 @@ void jogoInit(){
             al_draw_scaled_bitmap(quadrado, (pos[i][3]-48) * frameWidth[pers-49],  (pos[i][2]-48) * frameHeight[pers-49], frameWidth[pers-49], frameHeight[pers-49], ((pos[i][0]) * 16), ((pos[i][1]) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
         }
     }
-    setarVida(vida);
     setAudio("sounds/whenyouwere.ogg");//começa a melhor musica possivel
     while (!sair){//entra no loop do jogo
-	if(recvMsgFromServer(pos,DONT_WAIT) != NO_MESSAGE){
+        if(recvMsgFromServer(pos,DONT_WAIT)!=NO_MESSAGE){
         	desenhar();
 	}
-        if(cond){
-            pos[id][1] = -1;
-            pos[id][0] = -1;
-            morreu = 1;
-            sendMsgToServer(pos[id], 5);
+        for(i = 0; i < jogadores; i++){
+            if(pos[i][0] < 0){
+                contador++;
+            }
         }
-        if(morreu){
+        if(pos[id][5]==0){
+	fprintf(stderr, "%i\n", contador);
+		if(contador >= jogadores - 1 && pos[id][0] <= 0){
+		    fadein(telaDerrota, 1);
+		    al_rest(5);
+		    sair = 1;
+		}
+	contador = 0;
             continue;
         }
+        if(contador >= jogadores - 1 && pos[id][0] > 0){
+            fadein(telaVitoria, 1);
+            al_rest(5);
+            sair = 1;
+        }
+        contador = 0;
+ 
         while (!al_is_event_queue_empty(fila_eventos)){//se  acontecer algo
             ALLEGRO_EVENT evento;   //declara variavel eveno
             al_wait_for_event(fila_eventos, &evento);//esse evento fica na fila
             if(evento.type == ALLEGRO_EVENT_TIMER){
                 tempo++;
-                if(tempo == 600){
+                if(tempo == 60){
                     ttest++;
                     tempo = 0;
                     if(ttest == tmpmusic[musat%5]){
@@ -563,38 +585,70 @@ void jogoInit(){
                 }
             }
            
-            if (evento.type == ALLEGRO_EVENT_KEY_DOWN){
+            else if (evento.type == ALLEGRO_EVENT_KEY_DOWN){
                 if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //ægora ele checa se tem colisao, para cima
                     tecl='w';
                     pos[id][2]='1';
                     pos[id][3]=curFrame + 48;
                     pos[id][4]=tecl;
-                    sendMsgToServer(pos[id],5);
+                    sendMsgToServer(pos[id],6);
                     desenhar();
                 }
-                if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
+              else if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
                     tecl='a';
                     pos[id][2]='2';
                     pos[id][3]=curFrame + 48;
                     pos[id][4]=tecl;
-                    sendMsgToServer(pos[id],5);
+                    sendMsgToServer(pos[id],6);
                     desenhar();
                 }
-                if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
+               else if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
                     tecl='s';
                     pos[id][2]='0';
                     pos[id][3]=curFrame + 48;
                     pos[id][4]=tecl;
-                    sendMsgToServer(pos[id],5);
+                    sendMsgToServer(pos[id],6);
                     desenhar();
                 }
-                if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
+                else if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
                     tecl='d';
                     pos[id][2]='3';
                     pos[id][3]=curFrame + 48;
                     pos[id][4]=tecl;
-                    sendMsgToServer(pos[id],5);
+                    sendMsgToServer(pos[id],6);
                     desenhar();
+                }
+                else if (evento.keyboard.keycode == ALLEGRO_KEY_P){//funcao soco
+                    tecl='p';
+                    if(pos[id][2] == '0'){
+                      //  fprintf(stderr, "Jogador %d Deu soco pra baixo\n", id);
+                        //insira aqui a animação
+                        pos[id][4]=tecl;
+                        sendMsgToServer(pos[id],6);
+                    }
+                    if(pos[id][2] == '1'){
+                      //  fprintf(stderr, "Jogador %d Deu soco pra cima\n", id);
+                      //  fprintf(stderr, "Jogador %d Deu soco pra baixo\n", id);
+                        //insira aqui a animação
+                        pos[id][4]=tecl;
+                        sendMsgToServer(pos[id],6);
+                    }
+                    if(pos[id][2] == '2'){
+                       // fprintf(stderr, "Jogador %d Deu soco pra esquerda\n", id);
+                       // fprintf(stderr, "Jogador %d Deu soco pra baixo\n", id);
+                        //insira aqui a animação
+                        pos[id][4]=tecl;
+                        sendMsgToServer(pos[id],6);
+                    }
+                    if(pos[id][2] == '3'){
+                      //  fprintf(stderr, "Jogador %d Deu soco pra direita\n", id);
+                      //  fprintf(stderr, "Jogador %d Deu soco pra esquerda\n", id);
+                      //  fprintf(stderr, "Jogador %d Deu soco pra baixo\n", id);
+                        //insira aqui a animação
+                        pos[id][4]=tecl;
+                        sendMsgToServer(pos[id],6);
+                                               
+                    }
                 }
             }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se n tiver evento, sai
@@ -608,8 +662,8 @@ void jogoInit(){
                                 curFrame = 0;
                             }
                             frameCount = 0;
-							sendMsgToServer(pos[id],5*sizeof(char));                                                                              
-                            pos[i][3]=curFrame + 48;
+                            sendMsgToServer(pos[id],6);                                                                              
+                            pos[id][3]=curFrame + 48;
                         }
                     }
                     tecl = '0'; // evita que entre no loop dnv
