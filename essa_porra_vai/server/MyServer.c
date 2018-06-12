@@ -16,16 +16,16 @@
 #define SPRITE_5 11
 #define SPRITE_6 12
 #define DEAD 13
-#define jogadores 4
+#define jogadores 3
 #define mensagem struct msg_ret_t
-char pos[jogadores][5]; // matriz para armazenar posicoes iniciais do jogadores
+char pos[jogadores][6]; // matriz para armazenar posicoes iniciais do jogadores
 char pers[jogadores];
 char matrizOcupada[40][61];
-char aux[5];
+char aux[6];
 char aux2;
-int i, cont = 0; // contador   
+int i, cont = 0; // contador  
 void pegaPers();
-void posicaoInicial(char pos[][5]);
+void posicaoInicial(char pos[][6]);
 int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);
 void aceitaConexao();
 void pegaPers();
@@ -40,29 +40,31 @@ int main() {
     aceitaConexao(); // a conexao fica aberta para os usuarios entrarem
     pegaPers();
     broadcast(pers, jogadores*sizeof(char));
-    fprintf(stderr,"sai e mandei");
-    fprintf(stderr,"%c\n%c",pers[0],pers[1]);
+    //fprintf(stderr,"sai e mandei");
+    //fprintf(stderr,"%c\n%c",pers[0],pers[1]);
     fazMov();
 }
-void posicaoInicial(char pos[][5]){
+void posicaoInicial(char pos[][6]){
    int i;
     for(i=0;i<jogadores;i++){
         pos[i][0]=8;
         pos[i][1]=17;
         pos[i][2] = '0';
         pos[i][3] = '0';
+        pos[i][4]=0;
+		pos[i][5]=3;
     }
 }
  
 void aceitaConexao(){
     int id;
     int status=0;
-    int ID_Disponivel=0;   
+    int ID_Disponivel=0;  
     broadcast(&status,sizeof(int));
     while(ID_Disponivel<jogadores){
         id = acceptConnection();
         if(id != NO_CONNECTION){
-            fprintf(stderr,"O usuario[%d] foi conectado\n",id);
+            //fprintf(stderr,"O usuario[%d] foi conectado\n",id);
             ID_Disponivel++;
         }
         sendMsgToClient(&id,sizeof(int),id);
@@ -88,6 +90,7 @@ void fazMov(){
             pos[msgjog.client_id][2]=aux[2];
             pos[msgjog.client_id][3]=aux[3];
             pos[msgjog.client_id][4]=aux[4];
+			pos[msgjog.client_id][5]=aux[5];
             //fprintf(stderr,"x: %d y: %d\n",aux[0],aux[1]);
             if(pos[msgjog.client_id][4]=='w'){
                 //fprintf(stderr,"cliquei w, jogador %d",msgjog.client_id);
@@ -109,7 +112,89 @@ void fazMov(){
                 //fprintf(stderr,"cliquei d, jogador %d",msgjog.client_id);
                 //fprintf(stderr," depois :x: %d y: %d\n",pos[msgjog.client_id][0],pos[msgjog.client_id][1]);
             }
-            broadcast(pos,jogadores*5);
+            else  if (pos[msgjog.client_id][4]=='p'){//funcao soco
+                    if(pos[msgjog.client_id][2] == '0'){
+                        //fprintf(stderr, "Jogador %d Deu soco pra baixo\n", msgjog.client_id);
+                        for(i = 0; i < jogadores; i++){
+                            if(i != msgjog.client_id){
+                                if(pos[msgjog.client_id][1] == pos[i][1]-1 && pos[msgjog.client_id][0] == pos[i][0]){
+                             //       fprintf(stderr, "Jogador %d esmurrou o jogador %d",msgjog.client_id,i);
+                                    if(pos[i][5]>1){
+                                        pos[i][5]--;
+                                    }
+                                    else{
+                                        pos[i][0]=-1;
+                                        pos[i][1]=-1;
+                                        pos[i][5]=0;
+                                    }
+                                    i = jogadores;
+				//					fprintf(stderr,"jogador %d com vida %d",i,pos[i][5]);
+                                }
+                            }
+                        }
+                    }
+                    else if(pos[msgjog.client_id][2] == '1'){
+                       // fprintf(stderr, "Jogador %d Deu soco pra cima\n", msgjog.client_id);
+                        for(i = 0; i < jogadores; i++){
+                            if(i != msgjog.client_id){
+                                if(pos[msgjog.client_id][1] == pos[i][1]+1 && pos[msgjog.client_id][0] == pos[i][0]){
+                         //           fprintf(stderr, "Jogador %d esmurrou o jogador %d",msgjog.client_id,i);
+                                    if(pos[i][5]>1){
+                                        pos[i][5]--;
+                                    }
+                                    else{
+                                        pos[i][0]=-1;
+                                        pos[i][1]=-1;
+                                        pos[i][5]=0;
+                                    }
+                                    i = jogadores;
+			//						fprintf(stderr,"jogador %d com vida %d",i,pos[i][5]);
+                                }
+                            }
+                        }
+                    }
+                    else if(pos[msgjog.client_id][2] == '2'){
+                        //fprintf(stderr, "Jogador %d Deu soco pra esquerda\n",msgjog.client_id);
+                        for(i = 0; i < jogadores; i++){
+                            if(i != msgjog.client_id){
+                                if(pos[msgjog.client_id][0] == pos[i][0]+1 && pos[msgjog.client_id][1] == pos[i][1]){
+                          //          fprintf(stderr, "Jogador %d esmurrou o jogador %d\n",msgjog.client_id,i);
+                                    if(pos[i][5]>1){
+                                        pos[i][5]--;
+                                    }
+                                    else{
+                                        pos[i][0]=-1;
+                                        pos[i][1]=-1;
+                                        pos[i][5]=0;
+                                    }
+                                    i = jogadores;
+				//					fprintf(stderr,"jogador %d com vida %d",i,pos[i][5]);
+                                }
+                            }
+                        }
+                    }
+                    else if(pos[msgjog.client_id][2] == '3'){
+                      //  fprintf(stderr, "Jogador %d Deu soco pra direita\n", msgjog.client_id);
+                        for(i = 0; i < jogadores; i++){
+                            if(i != msgjog.client_id){
+                                if(pos[msgjog.client_id][0] == pos[i][0]-1 && pos[msgjog.client_id][1] == pos[i][1]){
+                                  //  fprintf(stderr, "Jogador %d esmurrou o jogador %d",msgjog.client_id,i);
+                                    if(pos[i][5]>1){
+                                        pos[i][5]--;
+                                    }
+                                    else{
+                                        pos[i][0]=-1;
+                                        pos[i][1]=-1;
+                                        pos[i][5]=0;
+                                    }
+                                    i = jogadores;
+			//						fprintf(stderr,"jogador %d com vida %d",i,pos[i][5]);
+                                }
+                            }
+                        }
+                    }
+                }
+            broadcast(pos,jogadores*6);
         }
     }
 }
@@ -172,10 +257,10 @@ void preencheMatriz(char matrizOcupada[][61]){//foi alterada
     strcpy(matrizOcupada[11],"111111111111111111111111100111111111111111111111111011001111");
     strcpy(matrizOcupada[12],"111111111111111111111111100111111111111111111111111011111111");
     strcpy(matrizOcupada[13],"111111111111111111111111101111111111111111111111111011111111");
-    strcpy(matrizOcupada[14],"111100000111111111000000000000000000000000000000000000000000");
-    strcpy(matrizOcupada[15],"111100000111111111000000000000000000000000000000000000000000");
-    strcpy(matrizOcupada[16],"111100000111111111100000000000000000000000000000000000000000");
-    strcpy(matrizOcupada[17],"111100000000000000000000000000000000000000000000000000000000");
+    strcpy(matrizOcupada[14],"111100000111111111000000000000000000000000000000000000000001");
+    strcpy(matrizOcupada[15],"111100000111111111000000000000000000000000000000000000000001");
+    strcpy(matrizOcupada[16],"111100000111111111100000000000000000000000000000000000000001");
+    strcpy(matrizOcupada[17],"111100000000000000000000000000000000000000000000000000000001");
     strcpy(matrizOcupada[18],"111100000000000000000000000000000100000000000000000011111111");
     strcpy(matrizOcupada[19],"111100000000000000000001111111111111111110000000000011111111");
     strcpy(matrizOcupada[20],"111100000000000000000011111111111111111110001111111111111111");
