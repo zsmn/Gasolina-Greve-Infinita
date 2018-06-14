@@ -81,6 +81,7 @@ ALLEGRO_TIMER *timer = NULL; // inicia o timer
 ALLEGRO_FONT *fonte = NULL;
 /* declaração de funções */
 void conectar();
+char tecl2;
 int fadeout(int velocidade);  //função pra dar o fadeout
 int fadein(ALLEGRO_BITMAP *imagem, int velocidade);  //função q dao fadein
 void setAudio(char k[]); //função de audio
@@ -321,13 +322,13 @@ void setAudio(char k[]){ //comeca musiquinha
     al_set_audio_stream_playing(musica, true);
 }
 void setarVida(int n){
-    if(n == 3){
+    if(n == 6){
         bvida = al_load_bitmap("resources/bvida3.png");
     }
-    else if(n == 2){
+    else if(n == 4){
         bvida = al_load_bitmap("resources/bvida2.png");
     }
-    else if(n == 1){
+    else if(n == 2){
         bvida = al_load_bitmap("resources/bvida1.png");
     }
     else{
@@ -517,7 +518,7 @@ void jogoInit(){//função que inicia o jogo
     dados[id][2]='0';
     dados[id][3] = '0';
     dados[id][4]=0;//Posteriormente, armazenará a tecla pressionada
-    dados[id][5]=3;//vida
+    dados[id][5]=6;//vida
     sendMsgToServer(dados[id], 6);
     imagem = al_load_bitmap("resources/aa.png");  //faz o carregamento do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
@@ -575,7 +576,7 @@ void jogoInit(){//função que inicia o jogo
             else if (evento.type == ALLEGRO_EVENT_KEY_DOWN){
             	if (evento.keyboard.keycode == ALLEGRO_KEY_W){ //agora ele checa se tem colisao, para cima
 					al_flush_event_queue(fila_eventos);
-                    tecl='w';
+                    tecl='w'; tecl2=tecl;
                     dados[id][2]='1';
                     dados[id][3]=curFrame + 48;
                     dados[id][4]=tecl;
@@ -583,7 +584,7 @@ void jogoInit(){//função que inicia o jogo
 				}
                 else if (evento.keyboard.keycode == ALLEGRO_KEY_A){//para a esquerda
 					al_flush_event_queue(fila_eventos);
-                    tecl='a';
+                    tecl='a'; tecl2=tecl;
                     dados[id][2]='2';
                     dados[id][3]=curFrame + 48;
                     dados[id][4]=tecl;
@@ -591,7 +592,7 @@ void jogoInit(){//função que inicia o jogo
 				}
 				else if (evento.keyboard.keycode == ALLEGRO_KEY_S){//para baixo
 					al_flush_event_queue(fila_eventos);
-                	tecl='s';
+                	tecl='s'; tecl2=tecl;
                     dados[id][2]='0';
                     dados[id][3]=curFrame + 48;
                     dados[id][4]=tecl;
@@ -599,21 +600,13 @@ void jogoInit(){//função que inicia o jogo
 				}
                 else if (evento.keyboard.keycode == ALLEGRO_KEY_D){//para a direita
 					al_flush_event_queue(fila_eventos);
-                    tecl='d';
+                    tecl='d'; tecl2=tecl;
                     dados[id][2]='3';
                     dados[id][3]=curFrame + 48;
                     dados[id][4]=tecl;
                     sendMsgToServer(dados[id],6);//enviando mensagem para o servidor, para ele "espalhar" para os outros clientes
                 }
-                else if (evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){//tecla que possibilita o soco, esse "if" checa a tecla pressionada anteriormente para saber a posição em que a sprite do soco será desenhada
-					al_flush_event_queue(fila_eventos);
-                    tecl='p';
-					pio=0;
-					dados[id][3] = '3';
-                    dados[id][4]=tecl;
-		    		dados[id][3] = '0';
-		    		sendMsgToServer(dados[id],6);
-                }
+                
             }
             if (evento.type == ALLEGRO_EVENT_DISPLAY_CLOSE){  //se não tiver evento, sai
                 sair = true;
@@ -629,7 +622,25 @@ void jogoInit(){//função que inicia o jogo
                             dados[id][3]=curFrame + 48;
                         }
                     }
+					if (evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){//tecla que possibilita o soco, esse "if" checa a tecla pressionada anteriormente para saber a posição em que a sprite do soco será desenhada
+					al_flush_event_queue(fila_eventos);
+                    tecl='p'; tecl2=tecl;
+					pio=0;
+					dados[id][3] = '3';
+                    dados[id][4]=tecl2;
+		    		dados[id][3] = '0';
+		    		sendMsgToServer(dados[id],6);
+                }
                     tecl = '0'; // evita que entre no loop dnv
+                }
+				else if (evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){//tecla que possibilita o soco, esse "if" checa a tecla pressionada anteriormente para saber a posição em que a sprite do soco será desenhada
+					al_flush_event_queue(fila_eventos);
+                    tecl='p'; tecl2=tecl;
+					pio=0;
+					dados[id][3] = '3';
+                    dados[id][4]=tecl2;
+		    		dados[id][3] = '0';
+		    		sendMsgToServer(dados[id],6);
                 }
             }
         }
