@@ -17,7 +17,7 @@
 #define SPRITE_5 11
 #define SPRITE_6 12
 #define DEAD 13
-#define jogadores 2
+#define jogadores 3
 #define mensagem struct msg_ret_t
 char dados[jogadores][6]; // matriz para armazenar posicoes iniciais do jogadores
 char pers[jogadores];
