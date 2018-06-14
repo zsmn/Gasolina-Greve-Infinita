@@ -2,6 +2,7 @@
 #include "server.h"
 #include <stdio.h>
 #include <string.h>
+#include<time.h>
 // defines
 #define DIREITA 1
 #define ESQUERDA 2
@@ -16,16 +17,16 @@
 #define SPRITE_5 11
 #define SPRITE_6 12
 #define DEAD 13
-#define jogadores 3
+#define jogadores 2
 #define mensagem struct msg_ret_t
-char pos[jogadores][6]; // matriz para armazenar posicoes iniciais do jogadores
+char dados[jogadores][6]; // matriz para armazenar posicoes iniciais do jogadores
 char pers[jogadores];
 char matrizOcupada[40][61];
 char aux[6];
+int cont;
 char aux2;
 int i, cont = 0; // contador  
 void pegaPers();
-void posicaoInicial(char pos[][6]);
 int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);
 void aceitaConexao();
 void pegaPers();
@@ -33,27 +34,13 @@ void fazMov();
 void preencheMatriz(char matrizOcupada[][61]);
 int main() {
     preencheMatriz(matrizOcupada);
-    posicaoInicial(pos); // coloca os jogadores nas posicoes iniciais
     serverInit(jogadores); // inicia o server
     system("clear");
     puts("o servidor esta funcionando!!");
     aceitaConexao(); // a conexao fica aberta para os usuarios entrarem
     pegaPers();
     broadcast(pers, jogadores*sizeof(char));
-    //fprintf(stderr,"sai e mandei");
-    //fprintf(stderr,"%c\n%c",pers[0],pers[1]);
     fazMov();
-}
-void posicaoInicial(char pos[][6]){
-   int i;
-    for(i=0;i<jogadores;i++){
-        pos[i][0]=8;
-        pos[i][1]=17;
-        pos[i][2] = '0';
-        pos[i][3] = '0';
-        pos[i][4]=0;
-		pos[i][5]=3;
-    }
 }
  
 void aceitaConexao(){
@@ -64,7 +51,6 @@ void aceitaConexao(){
     while(ID_Disponivel<jogadores){
         id = acceptConnection();
         if(id != NO_CONNECTION){
-            //fprintf(stderr,"O usuario[%d] foi conectado\n",id);
             ID_Disponivel++;
         }
         sendMsgToClient(&id,sizeof(int),id);
@@ -82,119 +68,108 @@ void pegaPers(){
     }
 }
 void fazMov(){
+	int cont1=0;
+	int cont2=0;
     while (1){
         mensagem msgjog = recvMsg(aux);
         if (msgjog.status == MESSAGE_OK){
-            pos[msgjog.client_id][0]=aux[0];
-            pos[msgjog.client_id][1]=aux[1];
-            pos[msgjog.client_id][2]=aux[2];
-            pos[msgjog.client_id][3]=aux[3];
-            pos[msgjog.client_id][4]=aux[4];
-			pos[msgjog.client_id][5]=aux[5];
-            //fprintf(stderr,"x: %d y: %d\n",aux[0],aux[1]);
-            if(pos[msgjog.client_id][4]=='w'){
-                //fprintf(stderr,"cliquei w, jogador %d",msgjog.client_id);
-                pos[msgjog.client_id][1]=bloqueiaPosicao(pos[msgjog.client_id][0],pos[msgjog.client_id][1],pos[msgjog.client_id][4],matrizOcupada);
-                //fprintf(stderr," depois :x: %d y: %d\n",pos[msgjog.client_id][0],pos[msgjog.client_id][1]);
+            dados[msgjog.client_id][0]=aux[0];
+            dados[msgjog.client_id][1]=aux[1];
+            dados[msgjog.client_id][2]=aux[2];
+            dados[msgjog.client_id][3]=aux[3];
+            dados[msgjog.client_id][4]=aux[4];
+	    	dados[msgjog.client_id][5]=aux[5];
+            if(dados[msgjog.client_id][4]=='w'){
+                dados[msgjog.client_id][1]=bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
             }
-            else if(pos[msgjog.client_id][4]=='s'){
-                pos[msgjog.client_id][1]=bloqueiaPosicao(pos[msgjog.client_id][0],pos[msgjog.client_id][1],pos[msgjog.client_id][4],matrizOcupada);
-                //fprintf(stderr,"cliquei s, jogador %d",msgjog.client_id);
-                //fprintf(stderr," depois :x: %d y: %d\n",pos[msgjog.client_id][0],pos[msgjog.client_id][1]);
+            else if(dados[msgjog.client_id][4]=='s'){
+                dados[msgjog.client_id][1]=bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
             }
-            else if(pos[msgjog.client_id][4]=='a'){
-                pos[msgjog.client_id][0]=bloqueiaPosicao(pos[msgjog.client_id][0],pos[msgjog.client_id][1],pos[msgjog.client_id][4],matrizOcupada);
-                //fprintf(stderr,"cliquei a jogador %d",msgjog.client_id);
-                //fprintf(stderr," depois :x: %d y: %d\n",pos[msgjog.client_id][0],pos[msgjog.client_id][1]);
+            else if(dados[msgjog.client_id][4]=='a'){
+                dados[msgjog.client_id][0]=bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
             }
-            else if(pos[msgjog.client_id][4]=='d'){
-                pos[msgjog.client_id][0]=bloqueiaPosicao(pos[msgjog.client_id][0],pos[msgjog.client_id][1],pos[msgjog.client_id][4],matrizOcupada);
-                //fprintf(stderr,"cliquei d, jogador %d",msgjog.client_id);
-                //fprintf(stderr," depois :x: %d y: %d\n",pos[msgjog.client_id][0],pos[msgjog.client_id][1]);
+            else if(dados[msgjog.client_id][4]=='d'){
+                dados[msgjog.client_id][0]=bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
             }
-            else  if (pos[msgjog.client_id][4]=='p'){//funcao soco
-                    if(pos[msgjog.client_id][2] == '0'){
-                        //fprintf(stderr, "Jogador %d Deu soco pra baixo\n", msgjog.client_id);
-                        for(i = 0; i < jogadores; i++){
-                            if(i != msgjog.client_id){
-                                if(pos[msgjog.client_id][1] == pos[i][1]-1 && pos[msgjog.client_id][0] == pos[i][0]){
-                             //       fprintf(stderr, "Jogador %d esmurrou o jogador %d",msgjog.client_id,i);
-                                    if(pos[i][5]>1){
-                                        pos[i][5]--;
-                                    }
-                                    else{
-                                        pos[i][0]=-1;
-                                        pos[i][1]=-1;
-                                        pos[i][5]=0;
-                                    }
-                                    i = jogadores;
-				//					fprintf(stderr,"jogador %d com vida %d",i,pos[i][5]);
+            else  if (dados[msgjog.client_id][4]=='p'){//funcao soco
+            	if(dados[msgjog.client_id][2] == '0'){
+                	for(i = 0; i < jogadores; i++){
+                    	if(i != msgjog.client_id){
+                        	if(dados[msgjog.client_id][1] == dados[i][1]-1 && dados[msgjog.client_id][0] == dados[i][0]){
+                            	if(dados[i][5]>1){
+                                	dados[i][5]--;
                                 }
-                            }
-                        }
-                    }
-                    else if(pos[msgjog.client_id][2] == '1'){
-                       // fprintf(stderr, "Jogador %d Deu soco pra cima\n", msgjog.client_id);
-                        for(i = 0; i < jogadores; i++){
-                            if(i != msgjog.client_id){
-                                if(pos[msgjog.client_id][1] == pos[i][1]+1 && pos[msgjog.client_id][0] == pos[i][0]){
-                         //           fprintf(stderr, "Jogador %d esmurrou o jogador %d",msgjog.client_id,i);
-                                    if(pos[i][5]>1){
-                                        pos[i][5]--;
-                                    }
-                                    else{
-                                        pos[i][0]=-1;
-                                        pos[i][1]=-1;
-                                        pos[i][5]=0;
-                                    }
-                                    i = jogadores;
-			//						fprintf(stderr,"jogador %d com vida %d",i,pos[i][5]);
+                                else{
+                                	dados[i][0]=-1;
+                                    dados[i][1]=-1;
+                                    dados[i][5]=0;
                                 }
-                            }
-                        }
-                    }
-                    else if(pos[msgjog.client_id][2] == '2'){
-                        //fprintf(stderr, "Jogador %d Deu soco pra esquerda\n",msgjog.client_id);
-                        for(i = 0; i < jogadores; i++){
-                            if(i != msgjog.client_id){
-                                if(pos[msgjog.client_id][0] == pos[i][0]+1 && pos[msgjog.client_id][1] == pos[i][1]){
-                          //          fprintf(stderr, "Jogador %d esmurrou o jogador %d\n",msgjog.client_id,i);
-                                    if(pos[i][5]>1){
-                                        pos[i][5]--;
-                                    }
-                                    else{
-                                        pos[i][0]=-1;
-                                        pos[i][1]=-1;
-                                        pos[i][5]=0;
-                                    }
-                                    i = jogadores;
-				//					fprintf(stderr,"jogador %d com vida %d",i,pos[i][5]);
+                                break;
+							}
+						}
+					}
+				}
+                else if(dados[msgjog.client_id][2] == '1'){
+                	for(i = 0; i < jogadores; i++){
+                    	if(i != msgjog.client_id){
+                        	if(dados[msgjog.client_id][1] == dados[i][1]+1 && dados[msgjog.client_id][0] == dados[i][0]){
+                                if(dados[i][5]>1){
+                                	dados[i][5]--;
                                 }
-                            }
-                        }
-                    }
-                    else if(pos[msgjog.client_id][2] == '3'){
-                      //  fprintf(stderr, "Jogador %d Deu soco pra direita\n", msgjog.client_id);
-                        for(i = 0; i < jogadores; i++){
-                            if(i != msgjog.client_id){
-                                if(pos[msgjog.client_id][0] == pos[i][0]-1 && pos[msgjog.client_id][1] == pos[i][1]){
-                                  //  fprintf(stderr, "Jogador %d esmurrou o jogador %d",msgjog.client_id,i);
-                                    if(pos[i][5]>1){
-                                        pos[i][5]--;
-                                    }
-                                    else{
-                                        pos[i][0]=-1;
-                                        pos[i][1]=-1;
-                                        pos[i][5]=0;
-                                    }
-                                    i = jogadores;
-			//						fprintf(stderr,"jogador %d com vida %d",i,pos[i][5]);
+                                else{
+                                	dados[i][0]=-1;
+                                    dados[i][1]=-1;
+                                    dados[i][5]=0;
                                 }
+                                break;
                             }
-                        }
-                    }
-                }
-            broadcast(pos,jogadores*6);
+						}
+					}
+				}
+                else if(dados[msgjog.client_id][2] == '2'){
+                    for(i = 0; i < jogadores; i++){
+                    	if(i != msgjog.client_id){
+                        	if(dados[msgjog.client_id][0] == dados[i][0]+1 && dados[msgjog.client_id][1] == dados[i][1]){
+                                if(dados[i][5]>1){
+                                	dados[i][5]--;
+                                }
+                                else{
+                                	dados[i][0]=-1;
+                                    dados[i][1]=-1;
+                                    dados[i][5]=0;
+                                }
+                                break;
+							}
+						}
+					}
+				}
+                else if(dados[msgjog.client_id][2] == '3'){
+                	for(i = 0; i < jogadores; i++){
+                    	if(i != msgjog.client_id){
+                        	if(dados[msgjog.client_id][0] == dados[i][0]-1 && dados[msgjog.client_id][1] == dados[i][1]){
+                            	if(dados[i][5]>1){
+                              		dados[i][5]--;
+                                }
+                                else{
+                                	dados[i][0]=-1;
+                                    dados[i][1]=-1;
+                                    dados[i][5]=0;
+                                }
+                                break;
+							}
+						}
+					}
+				}
+			}
+			if(dados[msgjog.client_id][0]==11&&dados[msgjog.client_id][1]==33&&dados[msgjog.client_id][5]<6&&cont1==0){
+				dados[msgjog.client_id][5]+=2;
+				cont1++;
+			}
+			if(dados[msgjog.client_id][0]==48&&dados[msgjog.client_id][1]==14&&dados[msgjog.client_id][5]<6&&cont2==0){
+				dados[msgjog.client_id][5]+=2;
+				cont2++;
+			}
+            broadcast(dados,jogadores*6);
         }
     }
 }
@@ -229,9 +204,7 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
                 }  
             }
             else if(tecla == 'd'){
-                //printf("ENTREI SDJOIASJ\n");
                 if(matrizOcupada[posicaoY][posicaoX+1]=='0'){
-                    //printf("AQUI TBM\n");
                     posicaoX++;
                     return posicaoX;
                 }
