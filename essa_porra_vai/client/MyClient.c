@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "client.h" //incluindo todas as blibliotecas
-#define jogadores 4
+#define jogadores 2
 /* variaveis globais */
 const float tempofade = 0.3;  //tempo de fade
 const int LARGURA_TELA = 960;
@@ -321,13 +321,13 @@ void setAudio(char k[]){ //comeca musiquinha
     al_set_audio_stream_playing(musica, true);
 }
 void setarVida(int n){
-    if(n == 6){
+    if(n == 3){
         bvida = al_load_bitmap("resources/bvida3.png");
     }
-    else if(n == 4){
+    else if(n == 2){
         bvida = al_load_bitmap("resources/bvida2.png");
     }
-    else if(n == 2){
+    else if(n == 1){
         bvida = al_load_bitmap("resources/bvida1.png");
     }
     else{
@@ -516,7 +516,7 @@ void jogoInit(){//função que inicia o jogo
     dados[id][2]='0';
     dados[id][3] = '0';
     dados[id][4]=0;//Posteriormente, armazenará a tecla pressionada
-    dados[id][5]=6;//vida
+    dados[id][5]=3;//vida
     sendMsgToServer(dados[id], 6);
     imagem = al_load_bitmap("resources/aa.png");  //faz o carregamento do mapa do jogo
     fadein(imagem, 1); //faz ela aparecer
@@ -622,8 +622,7 @@ void jogoInit(){//função que inicia o jogo
                             if(curFrame++ >= maxFrame){
                                 curFrame = 0;
                             }
-                            frameCount = 0;
-                            sendMsgToServer(dados[id],6);                                                                              
+                            frameCount = 0;                                                                             
                             dados[id][3]=curFrame + 48;
                         }
                     }
