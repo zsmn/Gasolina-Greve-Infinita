@@ -161,14 +161,6 @@ void fazMov(){
 					}
 				}
 			}
-			if(dados[msgjog.client_id][0]==11&&dados[msgjog.client_id][1]==33&&dados[msgjog.client_id][5]<6&&cont1==0){
-				dados[msgjog.client_id][5]+=2;
-				cont1++;
-			}
-			if(dados[msgjog.client_id][0]==48&&dados[msgjog.client_id][1]==14&&dados[msgjog.client_id][5]<6&&cont2==0){
-				dados[msgjog.client_id][5]+=2;
-				cont2++;
-			}
             broadcast(dados,jogadores*6);
         }
     }
