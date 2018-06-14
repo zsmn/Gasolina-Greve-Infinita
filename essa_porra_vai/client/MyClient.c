@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "client.h" //incluindo todas as blibliotecas
-#define jogadores 2
+#define jogadores 3
 /* variaveis globais */
 const float tempofade = 0.3;  //tempo de fade
 const int LARGURA_TELA = 960;
@@ -510,6 +510,7 @@ void selectPersonagem(){//carrega a imagem do personagem e depois desenha na tel
 }
 void jogoInit(){//função que inicia o jogo
     int i;
+	int pio=1;
     int contador = 0;
     dados[id][0] = posx;//posição na horizontal
     dados[id][1] = posy;//posição na vertical
@@ -533,6 +534,7 @@ void jogoInit(){//função que inicia o jogo
     while (!sair){//entra no loop do jogo
         if(recvMsgFromServer(dados,DONT_WAIT)!=NO_MESSAGE){
         	desenhar();//função que desenha na tela
+			pio=1;
 		}
         for(i = 0; i < jogadores; i++){
             if(dados[i][0] < 0){
@@ -603,9 +605,10 @@ void jogoInit(){//função que inicia o jogo
                     dados[id][4]=tecl;
                     sendMsgToServer(dados[id],6);//enviando mensagem para o servidor, para ele "espalhar" para os outros clientes
                 }
-                else if (evento.keyboard.keycode == ALLEGRO_KEY_P){//tecla que possibilita o soco, esse "if" checa a tecla pressionada anteriormente para saber a posição em que a sprite do soco será desenhada
+                else if (evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){//tecla que possibilita o soco, esse "if" checa a tecla pressionada anteriormente para saber a posição em que a sprite do soco será desenhada
 					al_flush_event_queue(fila_eventos);
                     tecl='p';
+					pio=0;
 					dados[id][3] = '3';
                     dados[id][4]=tecl;
 		    		dados[id][3] = '0';
