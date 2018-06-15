@@ -21,7 +21,7 @@ void pegaPers();
 void fazMov();
 void preencheMatriz(char matrizOcupada[][61]);
 
-int main() {
+int main(){
     preencheMatriz(matrizOcupada);
     serverInit(jogadores); // inicia o server
     system("clear");
