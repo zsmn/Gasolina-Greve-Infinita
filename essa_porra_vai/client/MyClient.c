@@ -553,7 +553,6 @@ void selectPersonagem(){//carrega a imagem do personagem e depois desenha na tel
 
 void jogoInit(){//função que inicia o jogo
     int i;
-	int pio=1;
     int contador = 0;
     /* seta os dados iniciais para o id do jogador */
     dados[id][0] = posx;
@@ -580,7 +579,6 @@ void jogoInit(){//função que inicia o jogo
     while (!sair){ // entra no loop do jogo
         if((recvMsgFromServer(dados,DONT_WAIT) != NO_MESSAGE)){
         	desenhar(); // função que desenha na tela
-			pio = 1;
 		}
         for(i = 0; i < jogadores; i++){
             if(dados[i][0] < 0){
@@ -658,27 +656,23 @@ void jogoInit(){//função que inicia o jogo
             }
             if(al_is_event_queue_empty(fila_eventos)) {
                 if(tecl == 's' || tecl == 'w' || tecl == 'a' || tecl == 'd'){//se 'w', 'a', 's' ou 'd' foi teclado, vai haver animação
-                    for(auxiliar = 0; auxiliar < 1; auxiliar++){
-                        if(frameCount++ >= frameDelay){
-                            if(curFrame++ >= maxFrame){
-                                curFrame = 0;
-                            }
-                            frameCount = 0;                                                          
-                            dados[id][3]=curFrame + 48;
+                	for(auxiliar = 0; auxiliar < 1; auxiliar++){
+                    	if(curFrame++ >= maxFrame){
+                        	curFrame = 0;
                         }
+                        frameCount = 0;                                                          
+                        dados[id][3]=curFrame + 48;
                     }
-					if(evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){
+					if(evento.keyboard.keycode == ALLEGRO_KEY_P){
 						al_flush_event_queue(fila_eventos);
-						pio=0;
 						dados[id][3] = '3';
 						dados[id][4] = '0';
 						dados[id][6] = 1;
 						sendMsgToServer(dados[id], 7);
 					}
                 }
-				else if(evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){
+				else if(evento.keyboard.keycode == ALLEGRO_KEY_P){
 					al_flush_event_queue(fila_eventos);
-					pio=0;
 					dados[id][3] = '3';
 					dados[id][4] = '0';
 					dados[id][6] = 1;
