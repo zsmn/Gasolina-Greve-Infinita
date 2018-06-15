@@ -3,40 +3,29 @@
 #include <stdio.h>
 #include <string.h>
 #include<time.h>
-// defines
-#define DIREITA 1
-#define ESQUERDA 2
-#define CIMA 3
-#define BAIXO 4
-#define ATIRE 5
-#define DANO 6
-#define SPRITE_1 7
-#define SPRITE_2 8
-#define SPRITE_3 9
-#define SPRITE_4 10
-#define SPRITE_5 11
-#define SPRITE_6 12
-#define DEAD 13
+
 #define jogadores 3
 #define mensagem struct msg_ret_t
-char dados[jogadores][6]; // matriz para armazenar posicoes iniciais do jogadores
-char pers[jogadores];
-char matrizOcupada[40][61];
-char aux[6];
-int cont;
-char aux2;
-int i, cont = 0; // contador  
+
+char dados[jogadores][7]; // matriz para armazenar posicoes iniciais do jogadores
+char pers[jogadores]; // matriz para armazenar os personagens escolhidos por cada jogador
+char matrizOcupada[40][61]; // armazena a matriz de interações com o mapa
+char aux[7]; // recebe as informações enviadas pelo cliente
+char aux2; // recebe os personagens selecionados por cada jogador
+int cont = 0, i = 0; // contadores
+
 void pegaPers();
 int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]);
 void aceitaConexao();
 void pegaPers();
 void fazMov();
 void preencheMatriz(char matrizOcupada[][61]);
+
 int main() {
     preencheMatriz(matrizOcupada);
     serverInit(jogadores); // inicia o server
     system("clear");
-    puts("o servidor esta funcionando!!");
+    puts("The server is running!");
     aceitaConexao(); // a conexao fica aberta para os usuarios entrarem
     pegaPers();
     broadcast(pers, jogadores*sizeof(char));
@@ -58,6 +47,7 @@ void aceitaConexao(){
     status = 1;
     broadcast(&status,sizeof(int));
 }
+
 void pegaPers(){
     while(cont < jogadores){
         mensagem msgjog2 = recvMsg(&aux2);
@@ -67,42 +57,44 @@ void pegaPers(){
         }
     }
 }
+
 void fazMov(){
 	int cont1=0;
 	int cont2=0;
     while (1){
         mensagem msgjog = recvMsg(aux);
         if (msgjog.status == MESSAGE_OK){
-            dados[msgjog.client_id][0]=aux[0];
-            dados[msgjog.client_id][1]=aux[1];
-            dados[msgjog.client_id][2]=aux[2];
-            dados[msgjog.client_id][3]=aux[3];
-            dados[msgjog.client_id][4]=aux[4];
-	    	dados[msgjog.client_id][5]=aux[5];
-            if(dados[msgjog.client_id][4]=='w'){
-                dados[msgjog.client_id][1]=bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
+            dados[msgjog.client_id][0] = aux[0];
+            dados[msgjog.client_id][1] = aux[1];
+            dados[msgjog.client_id][2] = aux[2];
+            dados[msgjog.client_id][3] = aux[3];
+            dados[msgjog.client_id][4] = aux[4];
+	    	dados[msgjog.client_id][5] = aux[5];
+			dados[msgjog.client_id][6] = aux[6];
+            if(dados[msgjog.client_id][4] == 'w'){
+                dados[msgjog.client_id][1] = bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
             }
-            else if(dados[msgjog.client_id][4]=='s'){
-                dados[msgjog.client_id][1]=bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
+            else if(dados[msgjog.client_id][4] == 's'){
+                dados[msgjog.client_id][1] = bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
             }
-            else if(dados[msgjog.client_id][4]=='a'){
-                dados[msgjog.client_id][0]=bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
+            else if(dados[msgjog.client_id][4] == 'a'){
+                dados[msgjog.client_id][0] = bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
             }
-            else if(dados[msgjog.client_id][4]=='d'){
-                dados[msgjog.client_id][0]=bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
+            else if(dados[msgjog.client_id][4] == 'd'){
+                dados[msgjog.client_id][0] = bloqueiaPosicao(dados[msgjog.client_id][0],dados[msgjog.client_id][1],dados[msgjog.client_id][4],matrizOcupada);
             }
-            else  if (dados[msgjog.client_id][4]=='p'){//funcao soco
+            else  if (dados[msgjog.client_id][6] == 1){//funcao soco
             	if(dados[msgjog.client_id][2] == '0'){
                 	for(i = 0; i < jogadores; i++){
                     	if(i != msgjog.client_id){
                         	if(dados[msgjog.client_id][1] == dados[i][1]-1 && dados[msgjog.client_id][0] == dados[i][0]){
-                            	if(dados[i][5]>1){
+                            	if(dados[i][5] > 1){
                                 	dados[i][5]--;
                                 }
                                 else{
-                                	dados[i][0]=-1;
-                                    dados[i][1]=-1;
-                                    dados[i][5]=0;
+                                	dados[i][0] = -1;
+                                    dados[i][1] = -1;
+                                    dados[i][5] = 0;
                                 }
                                 break;
 							}
@@ -113,13 +105,13 @@ void fazMov(){
                 	for(i = 0; i < jogadores; i++){
                     	if(i != msgjog.client_id){
                         	if(dados[msgjog.client_id][1] == dados[i][1]+1 && dados[msgjog.client_id][0] == dados[i][0]){
-                                if(dados[i][5]>1){
+                                if(dados[i][5] > 1){
                                 	dados[i][5]--;
                                 }
                                 else{
-                                	dados[i][0]=-1;
-                                    dados[i][1]=-1;
-                                    dados[i][5]=0;
+                                	dados[i][0] = -1;
+                                    dados[i][1] = -1;
+                                    dados[i][5] = 0;
                                 }
                                 break;
                             }
@@ -130,13 +122,13 @@ void fazMov(){
                     for(i = 0; i < jogadores; i++){
                     	if(i != msgjog.client_id){
                         	if(dados[msgjog.client_id][0] == dados[i][0]+1 && dados[msgjog.client_id][1] == dados[i][1]){
-                                if(dados[i][5]>1){
+                                if(dados[i][5] > 1){
                                 	dados[i][5]--;
                                 }
                                 else{
-                                	dados[i][0]=-1;
-                                    dados[i][1]=-1;
-                                    dados[i][5]=0;
+                                	dados[i][0] = -1;
+                                    dados[i][1] = -1;
+                                    dados[i][5] = 0;
                                 }
                                 break;
 							}
@@ -147,13 +139,13 @@ void fazMov(){
                 	for(i = 0; i < jogadores; i++){
                     	if(i != msgjog.client_id){
                         	if(dados[msgjog.client_id][0] == dados[i][0]-1 && dados[msgjog.client_id][1] == dados[i][1]){
-                            	if(dados[i][5]>1){
+                            	if(dados[i][5] > 1){
                               		dados[i][5]--;
                                 }
                                 else{
-                                	dados[i][0]=-1;
-                                    dados[i][1]=-1;
-                                    dados[i][5]=0;
+                                	dados[i][0] = -1;
+                                    dados[i][1] = -1;
+                                    dados[i][5] = 0;
                                 }
                                 break;
 							}
@@ -161,10 +153,12 @@ void fazMov(){
 					}
 				}
 			}
-            broadcast(dados,jogadores*6);
+            broadcast(dados,jogadores*7); // envia as informações após a movimentação ou o soco
         }
     }
 }
+
+/* essa função verifica se é possivel realizar a movimentação, baseando-se na matriz de interações com o mapa */
 int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61]){
     if(tecla == 'w'){
         if(matrizOcupada[posicaoY-1][posicaoX]=='0'){
@@ -207,7 +201,8 @@ int bloqueiaPosicao(int posicaoX,int posicaoY,char tecla,char matrizOcupada[][61
         }
     }
 }
-void preencheMatriz(char matrizOcupada[][61]){//foi alterada
+
+void preencheMatriz(char matrizOcupada[][61]){
     strcpy(matrizOcupada[0],"111111111111111111111111111111111111111111111111111111111111");
     strcpy(matrizOcupada[1],"111111111111111111111111111111111111111111111111111111111111");
     strcpy(matrizOcupada[2],"111111111111111111111111111111111111111111111111111111111111");
