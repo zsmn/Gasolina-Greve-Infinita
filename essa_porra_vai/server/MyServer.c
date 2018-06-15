@@ -90,6 +90,11 @@ void fazMov(){
                         	if(dados[msgjog.client_id][1] == dados[i][1]-1 && dados[msgjog.client_id][0] == dados[i][0]){
                             	if(dados[i][5] > 1){
                                 	dados[i][5]--;
+									dados[i][1] = bloqueiaPosicao(dados[i][0],dados[i][1],'s',matrizOcupada);
+									dados[i][1] = bloqueiaPosicao(dados[i][0],dados[i][1],'s',matrizOcupada);
+									dados[i][1] = bloqueiaPosicao(dados[i][0],dados[i][1],'s',matrizOcupada);
+			
+									
                                 }
                                 else{
                                 	dados[i][0] = -1;
@@ -107,6 +112,9 @@ void fazMov(){
                         	if(dados[msgjog.client_id][1] == dados[i][1]+1 && dados[msgjog.client_id][0] == dados[i][0]){
                                 if(dados[i][5] > 1){
                                 	dados[i][5]--;
+									dados[i][1] = bloqueiaPosicao(dados[i][0],dados[i][1],'w',matrizOcupada);
+									dados[i][1] = bloqueiaPosicao(dados[i][0],dados[i][1],'w',matrizOcupada);
+									dados[i][1] = bloqueiaPosicao(dados[i][0],dados[i][1],'w',matrizOcupada);
                                 }
                                 else{
                                 	dados[i][0] = -1;
@@ -124,6 +132,10 @@ void fazMov(){
                         	if(dados[msgjog.client_id][0] == dados[i][0]+1 && dados[msgjog.client_id][1] == dados[i][1]){
                                 if(dados[i][5] > 1){
                                 	dados[i][5]--;
+									dados[i][0] = bloqueiaPosicao(dados[i][0],dados[i][1],'a',matrizOcupada);
+									dados[i][0] = bloqueiaPosicao(dados[i][0],dados[i][1],'a',matrizOcupada);
+									dados[i][0] = bloqueiaPosicao(dados[i][0],dados[i][1],'a',matrizOcupada);
+
                                 }
                                 else{
                                 	dados[i][0] = -1;
@@ -141,6 +153,9 @@ void fazMov(){
                         	if(dados[msgjog.client_id][0] == dados[i][0]-1 && dados[msgjog.client_id][1] == dados[i][1]){
                             	if(dados[i][5] > 1){
                               		dados[i][5]--;
+									dados[i][0] = bloqueiaPosicao(dados[i][0],dados[i][1],'d',matrizOcupada);
+									dados[i][0] = bloqueiaPosicao(dados[i][0],dados[i][1],'d',matrizOcupada);
+									dados[i][0] = bloqueiaPosicao(dados[i][0],dados[i][1],'d',matrizOcupada);
                                 }
                                 else{
                                 	dados[i][0] = -1;
