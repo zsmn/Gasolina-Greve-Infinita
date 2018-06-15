@@ -9,9 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include "client.h"
-
 #define jogadores 3 // numero de jogadores que irao participar do jogo
-
 /* variaveis globais */
 const float tempofade = 0.3;  //tempo de fade
 const int LARGURA_TELA = 960;
@@ -25,21 +23,17 @@ int selecao; // variavel responsavel pela tela de seleção
 char matrizOcupada[40][61]; // armazena a matriz de interações com o mapa
 int opcoesat = 0; // armazena se a opção foi selecionada ou não
 int i; // variavel contadora global
-
 /* variaveis da animacao do personagem */
 const int maxFrame = 2; // frames maximos (de 0 até 2 neste caso)
 int frameCount = 0; // o frame inicial
 int frameDelay = 1; // delay entre cada frame
-
 /* variaveis usavas pra a musica */
 int tempo = 0;
 int ttest = 0;
 int musat = 0;
-
 /* tempo de cada musica e endereços*/
 int tmpmusic[5] = {212, 152, 184, 280, 248};
 char endmusic[5][30] = {"sounds/whenyouwere.ogg", "sounds/waitandbleed.ogg","sounds/timeofdying.ogg", "sounds/psychosocial.ogg", "sounds/freakonaleash.ogg"};
-
 /* algumas variaveis usadas para o jogador (client-side) */
 char pers; // variavel que recebe o personagem escolhido e manda para o servidor
 char end[100]; // armazena o endereço da imagem do personagem
@@ -66,7 +60,6 @@ char amp[100]; // armazena o endereço da ampulheta
 
 /* tela de ip */
 char str[15]; // armazena o ip
-
 /* criação do display e de alguns bitmaps */
 ALLEGRO_DISPLAY *janela = NULL; //ponteiro para a janela
 ALLEGRO_AUDIO_STREAM *musica = NULL; //ponteiro para a musica
@@ -79,14 +72,12 @@ ALLEGRO_BITMAP *fundo = NULL; //ponteiro do pano de fundo
 ALLEGRO_BITMAP *quadrado = NULL;  //quadradinho q eh o jogador
 ALLEGRO_BITMAP *loading = NULL; // ponteiro para a tela de loading
 ALLEGRO_BITMAP *ampulheta = NULL; // ponteiro que desenha a ampulheta
-ALLEGRO_BITMAP* player[jogadores]; // array de bitmaps para os jogadores
-ALLEGRO_BITMAP* telaVitoria = NULL; // bitmap da tela de vitoria
-ALLEGRO_BITMAP* telaDerrota = NULL; // bitmap da tela de derrota
+ALLEGRO_BITMAP *player[jogadores]; // array de bitmaps para os jogadores
+ALLEGRO_BITMAP *telaVitoria = NULL; // bitmap da tela de vitoria
+ALLEGRO_BITMAP *telaDerrota = NULL; // bitmap da tela de derrota
 ALLEGRO_BITMAP *porrada = NULL; // bitmap da explosão do soco
-
 /* tela de seleção de personagens */
 ALLEGRO_BITMAP *personagens = NULL; // tela da seleção de personagens
-
 /* character selection */
 ALLEGRO_BITMAP *perso1 = NULL; 
 ALLEGRO_BITMAP *perso2 = NULL;
@@ -94,16 +85,12 @@ ALLEGRO_BITMAP *perso3 = NULL;
 ALLEGRO_BITMAP *perso4 = NULL;
 ALLEGRO_BITMAP *perso5 = NULL;
 ALLEGRO_BITMAP *perso6 = NULL;
-
 /* vida de personagens */
 ALLEGRO_BITMAP *bvida = NULL; // barra de vida
-
 /* inicia a fonte */
 ALLEGRO_FONT *fonte = NULL;
-
 /* inicialização do timer */
 ALLEGRO_TIMER *timer = NULL; // inicia o timer
-
 /* declaração de funções */
 void conectar();
 int fadeout(int velocidade);  //função pra dar o fadeout
@@ -121,45 +108,35 @@ void jogoInit();
 void destroy();
 void desenharSoco(int x, int y);
 void writeIP(ALLEGRO_EVENT event, char str[]);
-
 int main(void){
     strcpy(str, "127.0.0.1");
     system("clear");
-
     if (!inicializar()){ //chamo inicializar, se der errado paro programa
         return -1;
     }
-
     al_init_font_addon();
     al_init_ttf_addon();
     fonte = al_load_font("resources/font.ttf", 82, 0); // carrega a fonte
     al_attach_audio_stream_to_mixer(musica, al_get_default_mixer()); //começo a musica
     al_set_audio_stream_playing(musica, true); //comeca a musica
-	
     efeitoFade(fundo);
     grupo = al_load_bitmap("resources/group.jpeg"); //seta a imagem do grupo
     efeitoFade(grupo);
-	
     menu = al_load_bitmap("resources/menu.bmp");
     fadein(menu, 1);
-
-    
     for(i=0;i<jogadores;i++){
         player[i]=al_create_bitmap(20, 20);
         al_set_target_bitmap(player[i]);
         al_clear_to_color(al_map_rgb(255, 0, 0));
     }
-
     inicializaMenu();
     selectPersonagem();
     conectar();        
     sendMsgToServer(&pers, 1);   
-
     loading = al_load_bitmap("resources/loading.png");
     while(status != 1){
         drawHourGlass();
     }
-
     recvMsgFromServer(persEsc, WAIT_FOR_IT);
     jogoInit();
     destroy();
@@ -181,14 +158,12 @@ void desenharSelecao(){
     al_draw_bitmap(perso6, 705, 552, 0);
     al_flip_display();
 }
-
 void efeitoFade(ALLEGRO_BITMAP *bitmap){
     fadein(bitmap, 1);
     al_draw_bitmap(bitmap, 0, 0, 0);  
     al_rest(tempofade);
     fadeout(1);
 }
-
 void drawHourGlass(){
     int i;
     recvMsgFromServer(&status,DONT_WAIT);
@@ -205,7 +180,6 @@ void drawHourGlass(){
         al_flip_display();
     }
 }
-
 void desenhar(){
     int i = 0;
     al_draw_bitmap_region(imagem,0,0,LARGURA_TELA,ALTURA_TELA,0,0,0);
@@ -217,35 +191,34 @@ void desenhar(){
             al_convert_mask_to_alpha(quadrado,al_map_rgb(255,0,255));
 			if(dados[i][3] == '3'){
 				al_draw_scaled_bitmap(quadrado, 0,  (dados[i][2]-48) * frameHeight[persEsc[i]-49], frameWidth[persEsc[i]-49], frameHeight[persEsc[i]-49], ((dados[i][0]) * 16), ((dados[i][1]) * 16),21,19, 0);
-			}else{
+			}
+			else{
 		        al_draw_scaled_bitmap(quadrado, (dados[i][3]-48) * frameWidth[persEsc[i]-49],  (dados[i][2]-48) * frameHeight[persEsc[i]-49], frameWidth[persEsc[i]-49], frameHeight[persEsc[i]-49], ((dados[i][0]) * 16), ((dados[i][1]) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa
 			}	
-		if(dados[i][6] == 1){
-			if(dados[i][2] == '0'){
-				desenharSoco(((dados[i][0]-1)*16), (dados[i][1])*16);
-			}
-			if(dados[i][2] == '1'){
-		        desenharSoco((dados[i][0]-1)*16, (dados[i][1]-2)*16);
-			}
-			if(dados[i][2] == '2'){
-		  	    desenharSoco((dados[i][0]-2)*16, (dados[i][1]-1)*16);
-			}
-			if(dados[i][2] == '3'){
-				desenharSoco((dados[i][0])*16, (dados[i][1]-1)*16);
-			}
-			dados[i][6] = 0;
-		} 
+			if(dados[i][6] == 1){
+				if(dados[i][2] == '0'){
+					desenharSoco(((dados[i][0]-1)*16), (dados[i][1])*16);
+				}
+				if(dados[i][2] == '1'){
+				    desenharSoco((dados[i][0]-1)*16, (dados[i][1]-2)*16);
+				}
+				if(dados[i][2] == '2'){
+			  	    desenharSoco((dados[i][0]-2)*16, (dados[i][1]-1)*16);
+				}
+				if(dados[i][2] == '3'){
+					desenharSoco((dados[i][0])*16, (dados[i][1]-1)*16);
+				}
+				dados[i][6] = 0;
+			} 
         }
     }
     if(dados[id][0] < 0){
         al_draw_text(fonte, al_map_rgb(255, 255, 255), 480, 0, ALLEGRO_ALIGN_CENTRE, "SPECTATING");
-    } 
+    }
     setarVida(dados[id][5]);//função que conta o número de vidas de cada jogador
     al_flip_display();//atualiza a tela
-    al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'
-	
+    al_clear_to_color(al_map_rgb(0, 0, 0)); // evita 'restos de pixeis'	
 }
-
 int fadeout(int velocidade){
     ALLEGRO_BITMAP *buffer = NULL;
     buffer = al_create_bitmap(LARGURA_TELA, ALTURA_TELA);
@@ -272,7 +245,6 @@ int fadeout(int velocidade){
     }
     al_destroy_bitmap(buffer);
 }
-
 int fadein(ALLEGRO_BITMAP *imagem, int velocidade){
     if (velocidade < 0){
         if(velocidade<0.0001){
@@ -293,7 +265,6 @@ int fadein(ALLEGRO_BITMAP *imagem, int velocidade){
     	al_rest(0.005); // Não é necessário caso haja controle de FPS
  	}
 }
-
 bool inicializar(){ //inicializa tudo e checa se tudo foi inicializado com sucesso
     al_init_image_addon();
     if (!al_init()){
@@ -448,9 +419,9 @@ void inicializaMenu(){
     while(jogar != 0 || opcoesat == 1){
 		fadeout(0.00001);
         while(!al_is_event_queue_empty(fila_eventos)){
-        if(jogar == 1) al_draw_bitmap(menu, 0, 0, 0);
-            ALLEGRO_EVENT evento;
-            al_wait_for_event(fila_eventos, &evento);
+        	if(jogar == 1) al_draw_bitmap(menu, 0, 0, 0);
+        	ALLEGRO_EVENT evento;
+        	al_wait_for_event(fila_eventos, &evento);
             if(jogar != 0){
                 if(dessa == 1) al_draw_bitmap(menu, 0, 0, 0);
                 if(evento.type == ALLEGRO_EVENT_MOUSE_BUTTON_UP){
@@ -496,7 +467,8 @@ void inicializaMenu(){
                         exit(1);
                     }
                 }
-            }else{
+            }
+			else{
                 if(opcoesat == 1 && evento.type == ALLEGRO_EVENT_KEY_CHAR){
                     writeIP(evento, str);
                     al_draw_bitmap(options, 0, 0, 0);
@@ -532,7 +504,6 @@ void writeIP(ALLEGRO_EVENT event, char str[]){//função que permite a entrada d
         dessa = 1;
     }
 }
-
 void selectPersonagem(){//carrega a imagem do personagem e depois desenha na tela para possibilitar a seleção de personagem feita pelo player
     personagens = al_load_bitmap("resources/perso.png");
     al_draw_bitmap(personagens, 0, 0, 0);
@@ -594,11 +565,9 @@ void jogoInit(){//função que inicia o jogo
 	dados[id][6] = 0;
 	/* seta os dados iniciais para o id do jogador */
     sendMsgToServer(dados[id], 7); // envia os dados para o servidor
-
     imagem = al_load_bitmap("resources/mapa.png"); // faz o carregamento do mapa do jogo
     fadein(imagem, 1); // faz ela aparecer
     al_draw_bitmap(imagem, 0, 0, 0); // desenha o mapa
-
     for(i=0;i<jogadores;i++){
         if(dados[i][0] > 0){
             sprintf(end, "resources/bon%c.png", persEsc[i]);//acessando a folha de sprites dependendo da escolha de personagem do jogador
@@ -607,9 +576,7 @@ void jogoInit(){//função que inicia o jogo
             al_draw_scaled_bitmap(quadrado, (dados[i][3]-48) * frameWidth[pers-49],  (dados[i][2]-48) * frameHeight[pers-49], frameWidth[pers-49], frameHeight[pers-49], ((dados[i][0]) * 16), ((dados[i][1]) * 16),21,19, 0);//desenha o boneco sem ele parecer uma menina super poderosa(há controle de pixel desenhado na tela)
         }
     }
-
     setAudio("sounds/whenyouwere.ogg"); // inicia a musica
-
     while (!sair){ // entra no loop do jogo
         if((recvMsgFromServer(dados,DONT_WAIT) != NO_MESSAGE)){
         	desenhar(); // função que desenha na tela
@@ -700,24 +667,21 @@ void jogoInit(){//função que inicia o jogo
                             dados[id][3]=curFrame + 48;
                         }
                     }
-				if (evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){
+					if(evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){
+						al_flush_event_queue(fila_eventos);
+						pio=0;
+						dados[id][3] = '3';
+						dados[id][4] = '0';
+						dados[id][6] = 1;
+						sendMsgToServer(dados[id], 7);
+					}
+                }
+				else if(evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){
 					al_flush_event_queue(fila_eventos);
 					pio=0;
 					dados[id][3] = '3';
 					dados[id][4] = '0';
 					dados[id][6] = 1;
-					sendMsgToServer(dados[id], 7);
-					dados[id][6] = 0;
-					sendMsgToServer(dados[id], 7);
-				}
-                }else if (evento.keyboard.keycode == ALLEGRO_KEY_P&&pio==1){
-					al_flush_event_queue(fila_eventos);
-					pio=0;
-					dados[id][3] = '3';
-					dados[id][4] = '0';
-					dados[id][6] = 1;
-					sendMsgToServer(dados[id], 7);
-					dados[id][6] = 0;
 					sendMsgToServer(dados[id], 7);
                 }
                 tecl = '0'; // evita que entre no loop novamente
