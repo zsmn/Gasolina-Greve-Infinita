@@ -24,6 +24,7 @@ int jogar = 1; // loop responsavel pelo menu
 int selecao; // variavel responsavel pela tela de seleção
 char matrizOcupada[40][61]; // armazena a matriz de interações com o mapa
 int opcoesat = 0; // armazena se a opção foi selecionada ou não
+int i; // variavel contadora global
 
 /* variaveis da animacao do personagem */
 const int maxFrame = 2; // frames maximos (de 0 até 2 neste caso)
