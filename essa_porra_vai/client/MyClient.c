@@ -45,7 +45,8 @@ int frameHeight[6] = {41, 48 , 50, 46, 42, 46}; // altura das imagens
 int curFrame = 0; // frame atual do jogador
 char persEsc[jogadores]; // armazena os personagens escolhidos pelos jogadores
 char dados[jogadores][7]; // armazena os dados de todos os jogadores
-	/*  [0] = armazena a posição x
+
+	/*      [0] = armazena a posição x
 	*	[1] = armazena a posição y
 	*	[2] = armazena a direção
 	*	[3] = armazena o frame atual do personagem
