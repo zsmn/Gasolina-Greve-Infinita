@@ -22,13 +22,13 @@ void fazMov();
 void preencheMatriz(char matrizOcupada[][61]);
 
 int main(){
-    preencheMatriz(matrizOcupada);
-    serverInit(jogadores); // inicia o server
+    preencheMatriz(matrizOcupada); // preenche a matriz de colisões
+    serverInit(jogadores); // inicia o server, com no maximo 'tantos' jogadores
     system("clear");
     puts("The server is running!");
     aceitaConexao(); // a conexao fica aberta para os usuarios entrarem
-    pegaPers();
-    broadcast(pers, jogadores*sizeof(char));
+    pegaPers(); // pega o personagem de cada jogador
+    broadcast(pers, jogadores*sizeof(char)); // envia para todo mundo os persongens de cada um, dessa forma cada um fica sabendo quem é quem.
     fazMov();
 }
  
@@ -36,19 +36,25 @@ void aceitaConexao(){
     int id;
     int status=0;
     int ID_Disponivel=0;  
-    broadcast(&status,sizeof(int));
+    broadcast(&status,sizeof(int)); // manda o status pra todos os jogadores
+	/* nesse caso eu mando 0 para todo mundo, ou seja, tenho que esperar os
+	jogadores entrarem para poder liberar o jogo para todos. */
     while(ID_Disponivel<jogadores){
-        id = acceptConnection();
+        id = acceptConnection(); // id recebe accept connection, se id for != NO_CONNECTION
+	    /* quer dizer que algum jogador entrou, então incremento minha variável de ID_Disponivel
+	    (que diz quantos jogadores estão conectados), dessa forma dizendo que 'mais um jogador' 
+	    conectou ao servidor */
         if(id != NO_CONNECTION){
             ID_Disponivel++;
         }
-        sendMsgToClient(&id,sizeof(int),id);
+        sendMsgToClient(&id,sizeof(int),id); // mando uma mensagem para o cliente conectado, informando seu id.
     }
-    status = 1;
-    broadcast(&status,sizeof(int));
+    status = 1; // se eu sai do while, significa que eu conectei os jogadores suficientes
+    broadcast(&status,sizeof(int)); // mando pra todos os jogadores que o status agora é 1, ou seja, eu posso iniciar o jogo.
 }
 
 void pegaPers(){
+/* essa minha função pega os personagens de cada jogador conectado, através do array pers */
     while(cont < jogadores){
         mensagem msgjog2 = recvMsg(&aux2);
         if(msgjog2.status == MESSAGE_OK){
@@ -59,6 +65,7 @@ void pegaPers(){
 }
 
 void fazMov(){
+	/* essa é a função usada pra fazer a movimentação e tratar a colisão, é meio complexo, mas se ler com paciencia dá pra entender a ideia. */
 	int cont1=0;
 	int cont2=0;
     while (1){
